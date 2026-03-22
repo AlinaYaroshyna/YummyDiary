@@ -1,4 +1,5 @@
 package com.example.yummydiary
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,29 +9,26 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MenuAdapter(
     private val items: List<MenuItem>,
-    private val onClick: (MenuItem) -> Unit
+    private val onItemClick: (MenuItem) -> Unit
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
 
-    class MenuViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView = view.findViewById(R.id.title)
-        val icon: ImageView = view.findViewById(R.id.icon)
+    inner class MenuViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val icon: ImageView = view.findViewById(R.id.item_icon)
+        val title: TextView = view.findViewById(R.id.item_title)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_menu, parent, false)
+            .inflate(R.layout.menu_item_grid, parent, false)
         return MenuViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: MenuViewHolder, position: Int) {
         val item = items[position]
-
+        holder.icon.setImageResource(item.iconRes)
         holder.title.text = item.title
-        holder.icon.setImageResource(item.icon)
 
-        holder.itemView.setOnClickListener {
-            onClick(item)
-        }
+        holder.itemView.setOnClickListener { onItemClick(item) }
     }
 
     override fun getItemCount() = items.size

@@ -1,40 +1,42 @@
 package com.example.yummydiary
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.LinearLayoutManager
 
+import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.yummydiary.databinding.ActivityMenuBinding
 
 class MenuActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMenuBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_menu)
+        binding = ActivityMenuBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val recycler = findViewById<RecyclerView>(R.id.menuRecycler)
-
+        // Twoje menuItems z tekstem i ikonami
         val menuItems = listOf(
-            MenuItem("Dziennik dań", R.drawable.ic_food),
-            MenuItem("Dodaj nowe danie", R.drawable.ic_food),
-            MenuItem("Mapa dań", R.drawable.ic_food),
-            MenuItem("Wszystkie przepisy", R.drawable.ic_food),
-            MenuItem("O autorach", R.drawable.ic_food)
+            MenuItem("Dziennik dań", R.drawable.cutlery_bw, DiaryActivity::class),
+            MenuItem("Dodaj nowe danie", R.drawable.cutlery_bw, AddMealActivity::class),
+            MenuItem("Mapa dań", R.drawable.cutlery_bw, MealMapActivity::class),
+            MenuItem("Wszystkie przepisy", R.drawable.cutlery_bw, AllRecipesActivity::class),
+            MenuItem("O autorach", R.drawable.cutlery_bw, AboutAuthorsActivity::class)
         )
 
-        recycler.layoutManager = LinearLayoutManager(this)
-        recycler.adapter = MenuAdapter(menuItems) {
-            // handle click
+        val adapter = MenuAdapter(menuItems) { item ->
+            // Obsługa kliknięcia według tytułu
+            when(item.title) {
+                "Dziennik dań" -> startActivity(Intent(this, DiaryActivity::class.java))
+                "Dodaj nowe danie" -> startActivity(Intent(this, AddMealActivity::class.java))
+                "Mapa dań" -> startActivity(Intent(this, MealMapActivity::class.java))
+                "Wszystkie przepisy" -> startActivity(Intent(this, AllRecipesActivity::class.java))
+                "O autorach" -> startActivity(Intent(this, AboutAuthorsActivity::class.java))
+            }
         }
+
+        // GridLayoutManager: 2 kolumny
+        binding.recyclerMenu.layoutManager = GridLayoutManager(this, 1)
+        binding.recyclerMenu.adapter = adapter
     }
 }

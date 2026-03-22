@@ -11,21 +11,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.YummyDiary">
+
         <activity
             android:name=".MenuActivity"
-            android:exported="false"
-            android:theme="@style/Theme.YummyDiary" />
-        <activity
-            android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.YummyDiary">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".DiaryActivity" android:exported="true"/>
+        <activity android:name=".AddMealActivity" android:exported="true"/>
+        <activity android:name=".MealMapActivity" android:exported="true"/>
+        <activity android:name=".AllRecipesActivity" android:exported="true"/>
+        <activity android:name=".AboutAuthorsActivity" android:exported="true"/>
+
     </application>
 
 </manifest>
