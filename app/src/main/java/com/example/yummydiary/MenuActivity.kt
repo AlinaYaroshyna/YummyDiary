@@ -15,7 +15,7 @@ class MenuActivity : AppCompatActivity() {
         binding = ActivityMenuBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Twoje menuItems z tekstem i ikonami
+        // menuItems z tekstem i ikonami
         val menuItems = listOf(
             MenuItem("Dziennik dań", R.drawable.cutlery_bw, DiaryActivity::class),
             MenuItem("Dodaj nowe danie", R.drawable.cutlery_bw, AddMealActivity::class),

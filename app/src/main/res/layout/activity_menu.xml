@@ -10,7 +10,7 @@
         android:id="@+id/menuTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="YummyDiary 🍽️"
+        android:text="YummyDiary"
         android:textSize="24sp"
         android:textStyle="bold"
         android:padding="16dp"
