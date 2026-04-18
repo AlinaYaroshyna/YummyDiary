@@ -1,48 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF5F5">
+    android:background="@android:color/white">
 
-    <!-- HEADER -->
-    <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="0dp"
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:layout_marginTop="25dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:src="@android:drawable/ic_menu_sort_by_size"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Menu"/>
-
-        <TextView
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Dodaj danie"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:gravity="center"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/cutlery"/>
+            <EditText
+                android:id="@+id/etRestaurantName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Wpisz nazwę resturacji"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@null"
+                android:textColor="#1A1A1A"
+                android:textColorHint="#757575" />
 
-    </LinearLayout>
+            <EditText
+                android:id="@+id/etRestaurantAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Wpisz adres restauracji"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:textColorHint="#999999"
+                android:background="@null"
+                android:layout_marginTop="4dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nazwa dania"
+                android:layout_marginTop="16dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etMealName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Wpisz nazwę dania"
+                android:padding="12dp"
+                android:background="@drawable/bg_edittext"
+                android:layout_marginTop="8dp"
+                android:textColor="#333333"
+                android:textColorHint="#757575" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Kategorie"
+                android:layout_marginTop="16dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgCategories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:chipSpacingHorizontal="8dp" />
+
+            <Button
+                android:id="@+id/btnAddCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+ Dodaj kategorię"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textAllCaps="false"
+                android:textColor="#F29F9F" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Opis"
+                android:layout_marginTop="16dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dodaj opis"
+                android:padding="12dp"
+                android:gravity="top"
+                android:minLines="3"
+                android:background="@drawable/bg_edittext"
+                android:layout_marginTop="8dp"
+                android:textColor="#333333"
+                android:textColorHint="#757575" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ocena"
+                android:layout_marginTop="16dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp" />
+
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="1.0"
+                android:progressTint="#FFC107"
+                android:progressBackgroundTint="#E0E0E0"
+                android:secondaryProgressTint="#FFC107"
+                android:layout_marginTop="8dp"
+                style="@style/Widget.AppCompat.RatingBar"
+                android:isIndicator="false"
+                android:minHeight="48dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Zdjęcie"
+                android:layout_marginTop="16dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/ivMealPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_edittext"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnSelectPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dodaj zdjęcie"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="#A8D8EA"
+                android:textColor="#4A4A4A" />
+
+            <Button
+                android:id="@+id/btnAddRecipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dodaj przepis"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="#F29F9F"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/btnSaveMeal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Zapisz danie do dziennika"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="#FCE38A"
+                android:textColor="#4A4A4A" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.core.widget.NestedScrollView>

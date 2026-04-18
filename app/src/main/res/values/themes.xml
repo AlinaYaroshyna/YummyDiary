@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.YummyDiary" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.YummyDiary" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#E8A0A0</item>
+        <item name="colorPrimaryDark">#E8A0A0</item>
+        <item name="colorAccent">#E8A0A0</item>
+        <item name="android:statusBarColor">#E8A0A0</item>
+    </style>
     <!-- Base application theme. -->
-    <style name="Base.Theme.YummyDiary" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Base.Theme.YummyDiary" parent="Theme.YummyDiary">
     </style>
 </resources>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <ImageView
+                android:id="@+id/ivMealDetail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_launcher_background" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/tvMealNameDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Spaghetti Bolognese"
+            android:textColor="#331A1A"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvRestaurantDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Restauracja Italiana"
+            android:textColor="#F29F9F"
+            android:textSize="18sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvAddressDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ul. Włoska 12, Warszawa"
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:layout_marginTop="2dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#EEEEEE"
+            android:layout_marginVertical="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvCategoryDetail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Obiad"
+                android:background="@drawable/bg_edittext"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <RatingBar
+                android:id="@+id/ratingBarDetail"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:isIndicator="true"
+                android:numStars="5"
+                android:progressTint="#FCE38A"
+                android:rating="4"
+                android:stepSize="0.5" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opis"
+            android:layout_marginTop="24dp"
+            android:textColor="#331A1A"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvDescriptionDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Bardzo smaczne spaghetti z dużą ilością parmezanu."
+            android:textColor="#4A4A4A"
+            android:textSize="15sp"
+            android:lineSpacingExtra="4dp" />
+
+        <TextView
+            android:id="@+id/tvDateDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Dodano: 02 marca 2026, 16:23"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp"
+            android:gravity="center" />
+
+        <Button
+            android:id="@+id/btnViewRecipe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Zobacz przepis"
+            android:backgroundTint="#FCE38A"
+            android:textColor="#4A4A4A"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnDeleteMeal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Usuń wpis"
+            android:backgroundTint="#FFEBEE"
+            android:textColor="#D32F2F" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

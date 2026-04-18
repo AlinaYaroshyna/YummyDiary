@@ -6,37 +6,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.yummydiary.databinding.ActivityMenuBinding
 
-class MenuActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMenuBinding
+class MenuActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMenuBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_menu)
 
-        // menuItems z tekstem i ikonami
-        val menuItems = listOf(
-            MenuItem("Dziennik dań", R.drawable.cutlery_bw, DiaryActivity::class),
-            MenuItem("Dodaj nowe danie", R.drawable.cutlery_bw, AddMealActivity::class),
-            MenuItem("Mapa dań", R.drawable.cutlery_bw, MealMapActivity::class),
-            MenuItem("Wszystkie przepisy", R.drawable.cutlery_bw, AllRecipesActivity::class),
-            MenuItem("O autorach", R.drawable.cutlery_bw, AboutAuthorsActivity::class)
-        )
-
-        val adapter = MenuAdapter(menuItems) { item ->
-            // Obsługa kliknięcia według tytułu
-            when(item.title) {
-                "Dziennik dań" -> startActivity(Intent(this, DiaryActivity::class.java))
-                "Dodaj nowe danie" -> startActivity(Intent(this, AddMealActivity::class.java))
-                "Mapa dań" -> startActivity(Intent(this, MealMapActivity::class.java))
-                "Wszystkie przepisy" -> startActivity(Intent(this, AllRecipesActivity::class.java))
-                "O autorach" -> startActivity(Intent(this, AboutAuthorsActivity::class.java))
-            }
+        findViewById<android.view.View>(R.id.btnNavAddMeal).setOnClickListener {
+            startActivity(Intent(this, AddMealActivity::class.java))
         }
 
-        // GridLayoutManager: 2 kolumny
-        binding.recyclerMenu.layoutManager = GridLayoutManager(this, 1)
-        binding.recyclerMenu.adapter = adapter
+        findViewById<android.view.View>(R.id.btnNavDiary).setOnClickListener {
+            startActivity(Intent(this, DiaryActivity::class.java))
+        }
+
+        findViewById<android.view.View>(R.id.btnNavMap).setOnClickListener {
+            startActivity(Intent(this, MealMapActivity::class.java))
+        }
     }
 }

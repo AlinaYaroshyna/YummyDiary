@@ -12,7 +12,7 @@ import android.content.Intent
 import android.widget.Button
 import android.widget.ImageButton
 
-class MealMapActivity : AppCompatActivity() {
+class MealMapActivity : BaseActivity() {
 
     private lateinit var map: MapView
 
@@ -26,6 +26,7 @@ class MealMapActivity : AppCompatActivity() {
         Configuration.getInstance().userAgentValue = packageName
 
         setContentView(R.layout.activity_meal_map)
+        setToolbarTitle("Mapa dań")
 
         map = findViewById(R.id.map)
         map.setTileSource(TileSourceFactory.MAPNIK)
@@ -45,10 +46,6 @@ class MealMapActivity : AppCompatActivity() {
         map.invalidate()
         findViewById<Button>(R.id.btnAddMeal).setOnClickListener {
             startActivity(Intent(this, AddMealActivity::class.java))
-        }
-        findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
-            startActivity(Intent(this, MenuActivity::class.java))
-            finish()
         }
     }
 

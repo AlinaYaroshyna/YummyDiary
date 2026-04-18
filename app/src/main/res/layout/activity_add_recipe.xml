@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FDFD">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvMealNameDisplay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Spaghetti Bolognese"
+                android:textColor="#000000"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvRestaurantNameDisplay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Restauracja Italiana"
+                android:textColor="#444444"
+                android:textSize="16sp"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dodaj składniki"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/llIngredientsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <!-- Dynamiczne pola składników -->
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnAddIngredient"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+ Dodaj składnik"
+                android:textAllCaps="false"
+                android:backgroundTint="#D1CCD6"
+                android:textColor="#4A4A4A"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Instrukcja przygotowania (Opcjonalne)"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp" />
+
+            <EditText
+                android:id="@+id/etInstructions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Wpisz instrukcję..."
+                android:minLines="5"
+                android:gravity="top"
+                android:padding="12dp"
+                android:background="@drawable/bg_edittext"
+                android:layout_marginTop="8dp"
+                android:textColor="#333333"
+                android:textColorHint="#999999" />
+
+            <Button
+                android:id="@+id/btnFinalSave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Zapisz danie do dziennika"
+                android:textAllCaps="false"
+                android:backgroundTint="#FCE38A"
+                android:textColor="#4A4A4A"
+                android:layout_marginTop="24dp"
+                android:paddingVertical="12dp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.core.widget.NestedScrollView>
