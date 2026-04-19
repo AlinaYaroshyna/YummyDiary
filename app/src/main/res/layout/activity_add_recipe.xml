@@ -19,6 +19,18 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <EditText
+                android:id="@+id/etMealNameRecipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nazwa dania"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:background="@drawable/bg_edittext"
+                android:padding="12dp"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/tvMealNameDisplay"
                 android:layout_width="match_parent"
@@ -26,7 +38,8 @@
                 android:text="Spaghetti Bolognese"
                 android:textColor="#000000"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="visible" />
 
             <TextView
                 android:id="@+id/tvRestaurantNameDisplay"

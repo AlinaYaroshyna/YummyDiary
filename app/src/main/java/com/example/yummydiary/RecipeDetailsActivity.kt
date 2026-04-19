@@ -27,6 +27,32 @@ class RecipeDetailsActivity : BaseActivity() {
 
         initializeViews()
         loadRecipeDetails()
+
+        findViewById<android.widget.Button>(R.id.btnDeleteRecipe).setOnClickListener {
+            deleteRecipe()
+        }
+
+        findViewById<android.widget.Button>(R.id.btnEditRecipe).setOnClickListener {
+            val intent = android.content.Intent(this, AddRecipeActivity::class.java).apply {
+                putExtra("RECIPE_ID", recipeId)
+            }
+            startActivity(intent)
+        }
+    }
+
+    private fun deleteRecipe() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Usuń przepis")
+            .setMessage("Czy na pewno chcesz usunąć ten przepis?")
+            .setPositiveButton("Usuń") { _, _ ->
+                lifecycleScope.launch {
+                    database.recipeDao().deleteRecipeById(recipeId)
+                    android.widget.Toast.makeText(this@RecipeDetailsActivity, "Przepis usunięty", android.widget.Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+            .setNegativeButton("Anuluj", null)
+            .show()
     }
 
     private fun initializeViews() {
@@ -59,7 +85,14 @@ class RecipeDetailsActivity : BaseActivity() {
 
     private fun displayRecipe(recipeWithMeal: RecipeWithMeal) {
         tvRecipeMealName.text = recipeWithMeal.meal?.mealName ?: "Nieznane danie"
-        tvRecipeRestaurantName.text = recipeWithMeal.meal?.restaurantName ?: ""
+        
+        val restaurant = recipeWithMeal.meal?.restaurantName
+        if (restaurant.isNullOrEmpty()) {
+            tvRecipeRestaurantName.text = "Własny przepis"
+        } else {
+            tvRecipeRestaurantName.text = restaurant
+        }
+
         tvRecipeIngredients.text = recipeWithMeal.recipe.ingredients
         
         val instructions = recipeWithMeal.recipe.instructions

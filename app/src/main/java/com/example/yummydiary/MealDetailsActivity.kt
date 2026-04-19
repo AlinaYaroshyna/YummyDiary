@@ -24,6 +24,7 @@ class MealDetailsActivity : BaseActivity() {
     private lateinit var tvDescriptionDetail: TextView
     private lateinit var tvDateDetail: TextView
     private lateinit var btnDeleteMeal: Button
+    private lateinit var btnEditMeal: Button
     private lateinit var btnViewRecipe: Button
     
     private lateinit var database: AppDatabase
@@ -43,6 +44,13 @@ class MealDetailsActivity : BaseActivity() {
         btnDeleteMeal.setOnClickListener {
             deleteMeal()
         }
+
+        btnEditMeal.setOnClickListener {
+            val intent = Intent(this, AddMealActivity::class.java).apply {
+                putExtra("MEAL_ID", mealId)
+            }
+            startActivity(intent)
+        }
     }
 
     private fun initializeViews() {
@@ -55,6 +63,7 @@ class MealDetailsActivity : BaseActivity() {
         tvDescriptionDetail = findViewById(R.id.tvDescriptionDetail)
         tvDateDetail = findViewById(R.id.tvDateDetail)
         btnDeleteMeal = findViewById(R.id.btnDeleteMeal)
+        btnEditMeal = findViewById(R.id.btnEditMeal)
         btnViewRecipe = findViewById(R.id.btnViewRecipe)
     }
 

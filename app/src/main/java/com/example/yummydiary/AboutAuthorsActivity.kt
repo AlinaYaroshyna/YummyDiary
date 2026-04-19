@@ -9,6 +9,6 @@ class AboutAuthorsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about_authors)
-        setToolbarTitle("O autorach")
+        setToolbarTitle("O autorkach")
     }
 }

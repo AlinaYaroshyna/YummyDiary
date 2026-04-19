@@ -2,26 +2,34 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home"
-        android:icon="@drawable/ic_home"
+        android:icon="@drawable/ic_home_white"
         android:title="Strona główna" />
     <item
-        android:id="@+id/nav_diary"
-        android:icon="@drawable/cutlery_bw"
-        android:title="Dziennik dań" />
-    <item
         android:id="@+id/nav_add_meal"
-        android:icon="@drawable/cutlery_bw"
+        android:icon="@drawable/ic_add_white"
         android:title="Dodaj nowe danie" />
     <item
-        android:id="@+id/nav_map"
-        android:icon="@drawable/cutlery_bw"
-        android:title="Mapa dań" />
+        android:id="@+id/nav_diary"
+        android:icon="@drawable/ic_book_white"
+        android:title="Dziennik dań" />
+    <item
+        android:id="@+id/nav_add_recipe"
+        android:icon="@drawable/ic_add_white"
+        android:title="Dodaj nowy przepis" />
     <item
         android:id="@+id/nav_recipes"
-        android:icon="@drawable/cutlery_bw"
+        android:icon="@drawable/ic_book_white"
         android:title="Wszystkie przepisy" />
     <item
+        android:id="@+id/nav_map"
+        android:icon="@drawable/ic_map_white"
+        android:title="Mapa dań" />
+    <item
         android:id="@+id/nav_about"
-        android:icon="@drawable/cutlery_bw"
-        android:title="O autorach" />
+        android:icon="@drawable/ic_info_white"
+        android:title="O autorkach" />
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_settings_white"
+        android:title="Ustawienia" />
 </menu>

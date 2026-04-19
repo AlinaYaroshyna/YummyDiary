@@ -9,6 +9,12 @@ interface RecipeDao {
     @Insert
     suspend fun insertRecipe(recipe: Recipe): Long
 
+    @androidx.room.Update
+    suspend fun updateRecipe(recipe: Recipe)
+
+    @Query("DELETE FROM recipes WHERE id = :id")
+    suspend fun deleteRecipeById(id: Int)
+
     @Query("SELECT * FROM recipes WHERE id = :id")
     suspend fun getRecipeById(id: Int): Recipe?
 

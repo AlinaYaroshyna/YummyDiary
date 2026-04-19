@@ -82,6 +82,24 @@
                 android:textSize="16sp"
                 android:lineSpacingExtra="4dp" />
 
+            <Button
+                android:id="@+id/btnEditRecipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Edytuj przepis"
+                android:backgroundTint="#B2EBF2"
+                android:textColor="#006064" />
+
+            <Button
+                android:id="@+id/btnDeleteRecipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Usuń przepis"
+                android:backgroundTint="#FFEBEE"
+                android:textColor="#D32F2F" />
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.core.widget.NestedScrollView>

@@ -67,6 +67,11 @@ open class BaseActivity : AppCompatActivity(), NavigationView.OnNavigationItemSe
                     startActivity(Intent(this, AddMealActivity::class.java))
                 }
             }
+            R.id.nav_add_recipe -> {
+                if (this !is AddRecipeActivity) {
+                    startActivity(Intent(this, AddRecipeActivity::class.java))
+                }
+            }
             R.id.nav_map -> {
                 if (this !is MealMapActivity) {
                     startActivity(Intent(this, MealMapActivity::class.java))
@@ -75,6 +80,11 @@ open class BaseActivity : AppCompatActivity(), NavigationView.OnNavigationItemSe
             R.id.nav_recipes -> {
                 if (this !is AllRecipesActivity) {
                     startActivity(Intent(this, AllRecipesActivity::class.java))
+                }
+            }
+            R.id.nav_settings -> {
+                if (this !is SettingsActivity) {
+                    startActivity(Intent(this, SettingsActivity::class.java))
                 }
             }
             R.id.nav_about -> {

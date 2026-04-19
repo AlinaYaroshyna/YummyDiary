@@ -32,7 +32,13 @@ class MealAdapter(
     override fun onBindViewHolder(holder: MealViewHolder, position: Int) {
         val meal = meals[position]
         holder.tvMealName.text = meal.mealName
-        holder.tvRestaurantName.text = meal.restaurantName
+        
+        if (meal.restaurantName.isNullOrEmpty()) {
+            holder.tvRestaurantName.text = "Własny przepis"
+        } else {
+            holder.tvRestaurantName.text = meal.restaurantName
+        }
+
         holder.ratingBar.rating = meal.rating
 
         val sdf = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("pl"))

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Zarządzanie treścią">
+        <Preference
+            app:key="pref_edit_categories"
+            app:title="Edytuj kategorie"
+            app:summary="Dodawaj, usuwaj i zmieniaj nazwy kategorii dań" />
+        <Preference
+            app:key="pref_manage_photos"
+            app:title="Zarządzanie zdjęciami"
+            app:summary="Oczyść nieużywane zdjęcia i zarządzaj pamięcią" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Dane i kopia zapasowa">
+        <Preference
+            app:key="pref_export_data"
+            app:title="Eksportuj dane"
+            app:summary="Zapisz swoje dania i przepisy do pliku" />
+        <Preference
+            app:key="pref_import_data"
+            app:title="Importuj dane"
+            app:summary="Wczytaj dane z kopii zapasowej" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

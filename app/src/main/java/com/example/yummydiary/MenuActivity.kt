@@ -23,5 +23,13 @@ class MenuActivity : BaseActivity() {
         findViewById<android.view.View>(R.id.btnNavMap).setOnClickListener {
             startActivity(Intent(this, MealMapActivity::class.java))
         }
+
+        findViewById<android.view.View>(R.id.btnNavAddRecipe).setOnClickListener {
+            startActivity(Intent(this, AddRecipeActivity::class.java))
+        }
+
+        findViewById<android.view.View>(R.id.btnNavAllRecipes).setOnClickListener {
+            startActivity(Intent(this, AllRecipesActivity::class.java))
+        }
     }
 }

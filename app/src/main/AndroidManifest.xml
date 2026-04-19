@@ -36,6 +36,8 @@
         <activity android:name=".AddRecipeActivity" android:exported="true"/>
         <activity android:name=".MealDetailsActivity" android:exported="true"/>
         <activity android:name=".RecipeDetailsActivity" android:exported="true"/>
+        <activity android:name=".SettingsActivity" android:exported="true"/>
+        <activity android:name=".EditCategoriesActivity" android:exported="true"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

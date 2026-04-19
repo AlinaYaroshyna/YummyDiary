@@ -99,7 +99,15 @@ class DiaryActivity : BaseActivity() {
         lifecycleScope.launch {
             val allMeals = database.mealDao().getAllMeals()
             
+            // Odfiltrowujemy "Własne przepisy" (te, które mają pustą nazwę restauracji i pochodzą z AddRecipeActivity)
+            // Przyjmujemy konwencję, że dania z restauracją są "posiłkami w dzienniku", 
+            // a te bez restauracji dodane przez AddRecipeActivity to tylko "przepisy".
+            // Jeśli jednak chcemy ukryć TYLKO te dodane bezpośrednio jako przepisy:
             val filteredMeals = allMeals.filter { meal ->
+                // Posiłek w dzienniku musi mieć nazwę restauracji, 
+                // w przeciwnym razie traktujemy go jako samodzielny przepis (widoczny w RecipesActivity)
+                meal.restaurantName.isNotEmpty()
+            }.filter { meal ->
                 // Filtr wyszukiwania
                 val matchesSearch = if (searchQuery.isEmpty()) true else {
                     meal.mealName.lowercase().contains(searchQuery) ||

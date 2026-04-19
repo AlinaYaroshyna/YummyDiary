@@ -37,6 +37,8 @@ class AddMealActivity : BaseActivity() {
     private var selectedImageUri: String? = null
     private var currentRecipeId: Int? = null
     private var photoFile: File? = null
+    private var editingMealId: Int? = null
+    private var originalDate: Long? = null
 
     private val categories = mutableListOf("Obiad", "Śniadanie", "Kolacja", "Deser")
 
@@ -80,10 +82,22 @@ class AddMealActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_meal)
-        setToolbarTitle("Dodaj nowe danie")
+        
+        editingMealId = intent.getIntExtra("MEAL_ID", -1).takeIf { it != -1 }
+        
+        if (editingMealId != null) {
+            setToolbarTitle("Edytuj danie")
+        } else {
+            setToolbarTitle("Dodaj nowe danie")
+        }
 
         initializeViews()
         setupCategories()
+
+        if (editingMealId != null) {
+            loadMealData()
+            btnSaveMeal.text = "Zapisz zmiany"
+        }
 
         btnSaveMeal.setOnClickListener {
             saveMeal()
@@ -101,6 +115,9 @@ class AddMealActivity : BaseActivity() {
             val intent = Intent(this, AddRecipeActivity::class.java).apply {
                 putExtra("MEAL_NAME", etMealName.text.toString())
                 putExtra("RESTAURANT_NAME", etRestaurantName.text.toString())
+                if (currentRecipeId != null) {
+                    putExtra("RECIPE_ID", currentRecipeId)
+                }
             }
             addRecipeLauncher.launch(intent)
         }
@@ -163,6 +180,36 @@ class AddMealActivity : BaseActivity() {
         ivMealPhoto = findViewById(R.id.ivMealPhoto)
     }
 
+    private fun loadMealData() {
+        lifecycleScope.launch {
+            val database = AppDatabase.getDatabase(this@AddMealActivity)
+            val meal = database.mealDao().getMealById(editingMealId!!)
+            meal?.let {
+                etRestaurantName.setText(it.restaurantName)
+                etRestaurantAddress.setText(it.restaurantAddress)
+                etMealName.setText(it.mealName)
+                etDescription.setText(it.description)
+                ratingBar.rating = it.rating
+                selectedImageUri = it.imagePath
+                currentRecipeId = it.recipeId
+                originalDate = it.date
+                
+                if (it.imagePath != null) {
+                    ivMealPhoto.visibility = View.VISIBLE
+                    try {
+                        ivMealPhoto.setImageURI(Uri.parse(it.imagePath))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                
+                if (currentRecipeId != null) {
+                    btnAddRecipe.text = "Edytuj przepis"
+                }
+            }
+        }
+    }
+
     private fun setupCategories() {
         lifecycleScope.launch {
             val database = AppDatabase.getDatabase(this@AddMealActivity)
@@ -178,6 +225,19 @@ class AddMealActivity : BaseActivity() {
             cgCategories.removeAllViews()
             finalCategories.forEach { category ->
                 addCategoryChip(category)
+            }
+
+            // Zaznacz kategorie jeśli edytujemy
+            editingMealId?.let { id ->
+                val meal = database.mealDao().getMealById(id)
+                meal?.category?.split(", ")?.map { it.trim() }?.forEach { selectedCat ->
+                    for (i in 0 until cgCategories.childCount) {
+                        val chip = cgCategories.getChildAt(i) as Chip
+                        if (chip.text.toString() == selectedCat) {
+                            chip.isChecked = true
+                        }
+                    }
+                }
             }
         }
     }
@@ -222,8 +282,8 @@ class AddMealActivity : BaseActivity() {
         }
         val categoryString = selectedCategories.joinToString(", ")
 
-        if (mealName.isEmpty() || restaurantName.isEmpty()) {
-            Toast.makeText(this, "Wypełnij nazwę restauracji i dania", Toast.LENGTH_SHORT).show()
+        if (mealName.isEmpty()) {
+            Toast.makeText(this, "Wypełnij nazwę dania", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -233,21 +293,27 @@ class AddMealActivity : BaseActivity() {
         }
 
         val meal = Meal(
-            restaurantName = restaurantName,
+            id = editingMealId ?: 0,
+            restaurantName = if (restaurantName.isEmpty()) "" else restaurantName,
             restaurantAddress = etRestaurantAddress.text.toString(),
             mealName = mealName,
             category = categoryString,
             description = description,
             rating = ratingBar.rating,
-            date = System.currentTimeMillis(),
+            date = originalDate ?: System.currentTimeMillis(),
             imagePath = selectedImageUri,
             recipeId = currentRecipeId
         )
 
         lifecycleScope.launch {
             val database = AppDatabase.getDatabase(this@AddMealActivity)
-            database.mealDao().insertMeal(meal)
-            Toast.makeText(this@AddMealActivity, "Danie zapisane!", Toast.LENGTH_SHORT).show()
+            if (editingMealId == null) {
+                database.mealDao().insertMeal(meal)
+                Toast.makeText(this@AddMealActivity, "Danie zapisane!", Toast.LENGTH_SHORT).show()
+            } else {
+                database.mealDao().updateMeal(meal)
+                Toast.makeText(this@AddMealActivity, "Zmiany zapisane!", Toast.LENGTH_SHORT).show()
+            }
             
             val intent = Intent(this@AddMealActivity, DiaryActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

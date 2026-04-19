@@ -13,6 +13,9 @@ interface MealDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMeal(meal: Meal)
 
+    @androidx.room.Update
+    suspend fun updateMeal(meal: Meal)
+
     @Query("DELETE FROM meals WHERE id = :id")
     suspend fun deleteMealById(id: Int)
 
@@ -27,4 +30,7 @@ interface MealDao {
 
     @Query("SELECT * FROM meals WHERE recipeId IS NOT NULL ORDER BY date DESC")
     suspend fun getMealsWithRecipes(): List<Meal>
+
+    @Query("SELECT * FROM meals WHERE category LIKE '%' || :category || '%'")
+    suspend fun getMealsWithCategory(category: String): List<Meal>
 }

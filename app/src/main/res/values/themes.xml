@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- GŁÓWNY MOTYW APLIKACJI -->
     <style name="Theme.YummyDiary" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#E8A0A0</item>
         <item name="colorPrimaryDark">#E8A0A0</item>
         <item name="colorAccent">#E8A0A0</item>
         <item name="android:statusBarColor">#E8A0A0</item>
+        <item name="android:windowBackground">#121212</item>
+
+        <!-- Domyślne kolory dla reszty aplikacji (można dostosować) -->
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">#BDBDBD</item>
+
+        <!-- Motyw dla ekranu ustawień - CIEMNY -->
+        <item name="preferenceTheme">@style/DarkPreferenceTheme</item>
     </style>
-    <!-- Base application theme. -->
+
+    <style name="DarkPreferenceTheme" parent="@style/PreferenceThemeOverlay">
+        <item name="android:background">#121212</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">#BDBDBD</item>
+        <item name="colorAccent">#E8A0A0</item>
+    </style>
+
     <style name="Base.Theme.YummyDiary" parent="Theme.YummyDiary">
     </style>
+
 </resources>
