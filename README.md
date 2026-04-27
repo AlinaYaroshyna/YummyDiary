@@ -19,6 +19,8 @@ YummyDiary to aplikacja na system Android, która pozwala pasjonatom jedzenia do
 -   **Mapy**: osmdroid + osmbonuspack (OpenStreetMap).
 -   **Architektura**: MVVM (ViewModel, LiveData, Coroutines).
 -   **UI**: Material Design 3.
+
+  
 ![Mockups1](Mockups1.png)
 ![Mockups2](Mockups2.png)
 ![Mockups3](Mockups3.png)
