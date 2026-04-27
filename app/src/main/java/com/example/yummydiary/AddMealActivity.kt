@@ -7,7 +7,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.view.LayoutInflater
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,7 +17,12 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.osmdroid.bonuspack.location.NominatimPOIProvider
+import org.osmdroid.bonuspack.location.POI
+import org.osmdroid.util.GeoPoint
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,6 +45,9 @@ class AddMealActivity : BaseActivity() {
     private var photoFile: File? = null
     private var editingMealId: Int? = null
     private var originalDate: Long? = null
+
+    private var selectedLatitude: Double? = null
+    private var selectedLongitude: Double? = null
 
     private val categories = mutableListOf("Obiad", "Śniadanie", "Kolacja", "Deser")
 
@@ -123,6 +132,53 @@ class AddMealActivity : BaseActivity() {
         }
     }
 
+    private fun searchRestaurants(query: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val poiProvider = NominatimPOIProvider(packageName)
+                // NominatimPOIProvider doesn't have a simple keyword search that isn't location-based.
+                // Searching around a fixed point (e.g., Wroclaw Rynek).
+                val wroclaw = GeoPoint(51.1099, 17.0318)
+                val pois = poiProvider.getPOICloseTo(wroclaw, query, 20, 0.1)
+                
+                withContext(Dispatchers.Main) {
+                    if (pois != null && pois.isNotEmpty()) {
+                        showPoiSelectionDialog(pois, query)
+                    } else {
+                        Toast.makeText(this@AddMealActivity, "Nie znaleziono restauracji dla: $query", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@AddMealActivity, "Błąd wyszukiwania: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun showPoiSelectionDialog(pois: List<POI>, query: String) {
+        val names = pois.map { 
+            // In Nominatim POI, mType often contains the name, and mDescription contains the address
+            val mainName = it.mDescription?.split(",")?.firstOrNull()?.trim() ?: query
+            val address = it.mDescription ?: ""
+            "$mainName\n$address"
+        }.toTypedArray()
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Znalezione restauracje")
+            .setItems(names) { _, which ->
+                val selected = pois[which]
+                val mainName = selected.mDescription?.split(",")?.firstOrNull()?.trim() ?: query
+                etRestaurantName.setText(mainName)
+                etRestaurantAddress.setText(selected.mDescription ?: "")
+                selectedLatitude = selected.mLocation.latitude
+                selectedLongitude = selected.mLocation.longitude
+            }
+            .setNegativeButton("Anuluj", null)
+            .show()
+    }
+
     private fun showImageSourceDialog() {
         val options = arrayOf("Galeria", "Aparat")
         android.app.AlertDialog.Builder(this)
@@ -169,6 +225,18 @@ class AddMealActivity : BaseActivity() {
     private fun initializeViews() {
         etRestaurantName = findViewById(R.id.etRestaurantName)
         etRestaurantAddress = findViewById(R.id.etRestaurantAddress)
+        
+        // Automatyczne podpowiedzi po wpisaniu 3 znaków
+        etRestaurantName.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (s != null && s.length == 4) { // Wyzwalamy przy 4 znakach, żeby nie spamować
+                    searchRestaurants(s.toString())
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         etMealName = findViewById(R.id.etMealName)
         etDescription = findViewById(R.id.etDescription)
         cgCategories = findViewById(R.id.cgCategories)
@@ -302,7 +370,9 @@ class AddMealActivity : BaseActivity() {
             rating = ratingBar.rating,
             date = originalDate ?: System.currentTimeMillis(),
             imagePath = selectedImageUri,
-            recipeId = currentRecipeId
+            recipeId = currentRecipeId,
+            latitude = selectedLatitude,
+            longitude = selectedLongitude
         )
 
         lifecycleScope.launch {

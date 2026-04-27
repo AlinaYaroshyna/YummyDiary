@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.play.services.maps)
     implementation(libs.osmdroid.android)
+    implementation(libs.osmbonuspack)
     implementation("androidx.preference:preference-ktx:1.2.1")
 
     implementation(libs.androidx.room.runtime)

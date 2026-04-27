@@ -14,5 +14,7 @@ data class Meal(
     val rating: Float,
     val date: Long,
     val imagePath: String? = null,
-    val recipeId: Int? = null
+    val recipeId: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
