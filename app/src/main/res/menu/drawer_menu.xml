@@ -25,9 +25,9 @@
         android:icon="@drawable/ic_map_white"
         android:title="Mapa dań" />
     <item
-        android:id="@+id/nav_about"
+        android:id="@+id/nav_how_to_use"
         android:icon="@drawable/ic_info_white"
-        android:title="O autorkach" />
+        android:title="Jak używać aplikacji" />
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_settings_white"

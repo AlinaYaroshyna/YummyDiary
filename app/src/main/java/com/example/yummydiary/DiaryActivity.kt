@@ -18,7 +18,8 @@ class DiaryActivity : BaseActivity() {
 
     private lateinit var rvMeals: RecyclerView
     private lateinit var mealAdapter: MealAdapter
-    private lateinit var chipGroup: ChipGroup
+    private lateinit var chipGroupCategories: ChipGroup
+    private lateinit var chipGroupRestaurants: ChipGroup
     private lateinit var tvEmptyState: TextView
     private lateinit var etSearch: EditText
     private lateinit var database: AppDatabase
@@ -31,7 +32,8 @@ class DiaryActivity : BaseActivity() {
         database = AppDatabase.getDatabase(this)
         
         rvMeals = findViewById(R.id.rvMeals)
-        chipGroup = findViewById(R.id.chipGroupCategories)
+        chipGroupCategories = findViewById(R.id.chipGroupCategories)
+        chipGroupRestaurants = findViewById(R.id.chipGroupRestaurants)
         tvEmptyState = findViewById(R.id.tvEmptyState)
         etSearch = findViewById(R.id.etSearchMeals)
 
@@ -44,8 +46,9 @@ class DiaryActivity : BaseActivity() {
         rvMeals.adapter = mealAdapter
 
         setupSearch()
-        setupFilter()
+        setupFilters()
         loadCategories()
+        loadRestaurants()
         loadMeals()
     }
 
@@ -71,63 +74,86 @@ class DiaryActivity : BaseActivity() {
             val defaultCategories = listOf("Obiad", "Śniadanie", "Kolacja", "Deser", "Z przepisem")
             val allCategories = (defaultCategories + uniqueDbCategories).distinct()
 
-            chipGroup.removeAllViews()
+            chipGroupCategories.removeAllViews()
             allCategories.forEach { category ->
-                val chip = layoutInflater.inflate(R.layout.view_filter_chip, chipGroup, false) as Chip
+                val chip = layoutInflater.inflate(R.layout.view_filter_chip, chipGroupCategories, false) as Chip
                 chip.text = category
                 chip.id = View.generateViewId()
-                chipGroup.addView(chip)
+                chipGroupCategories.addView(chip)
             }
         }
     }
 
-    private fun setupFilter() {
-        chipGroup.setOnCheckedStateChangeListener { _, _ ->
+    private fun loadRestaurants() {
+        lifecycleScope.launch {
+            val restaurantNames = database.mealDao().getAllRestaurantNames()
+            chipGroupRestaurants.removeAllViews()
+            
+            restaurantNames.forEach { name ->
+                val chip = layoutInflater.inflate(R.layout.view_filter_chip, chipGroupRestaurants, false) as Chip
+                chip.text = name
+                chip.id = View.generateViewId()
+                chipGroupRestaurants.addView(chip)
+            }
+        }
+    }
+
+    private fun setupFilters() {
+        chipGroupCategories.setOnCheckedStateChangeListener { _, _ ->
+            loadMeals()
+        }
+        chipGroupRestaurants.setOnCheckedStateChangeListener { _, _ ->
             loadMeals()
         }
     }
 
     private fun loadMeals() {
-        if (!::chipGroup.isInitialized || !::etSearch.isInitialized) return
+        if (!::chipGroupCategories.isInitialized || !::chipGroupRestaurants.isInitialized || !::etSearch.isInitialized) return
 
         val searchQuery = etSearch.text.toString().trim().lowercase()
-        val selectedChipIds = chipGroup.checkedChipIds
-        val selectedLabels = selectedChipIds.map { id ->
+        
+        val selectedCategoryIds = chipGroupCategories.checkedChipIds
+        val selectedCategories = selectedCategoryIds.map { id ->
+            findViewById<Chip>(id).text.toString()
+        }
+
+        val selectedRestaurantIds = chipGroupRestaurants.checkedChipIds
+        val selectedRestaurants = selectedRestaurantIds.map { id ->
             findViewById<Chip>(id).text.toString()
         }
 
         lifecycleScope.launch {
             val allMeals = database.mealDao().getAllMeals()
             
-            // Odfiltrowujemy "Własne przepisy" (te, które mają pustą nazwę restauracji i pochodzą z AddRecipeActivity)
-            // Przyjmujemy konwencję, że dania z restauracją są "posiłkami w dzienniku", 
-            // a te bez restauracji dodane przez AddRecipeActivity to tylko "przepisy".
-            // Jeśli jednak chcemy ukryć TYLKO te dodane bezpośrednio jako przepisy:
             val filteredMeals = allMeals.filter { meal ->
-                // Posiłek w dzienniku musi mieć nazwę restauracji, 
-                // w przeciwnym razie traktujemy go jako samodzielny przepis (widoczny w RecipesActivity)
-                meal.restaurantName.isNotEmpty()
+                // Basic validation: must have a restaurant name or be a recipe
+                meal.restaurantName.isNotEmpty() || meal.recipeId != null
             }.filter { meal ->
-                // Filtr wyszukiwania
+                // Search filter
                 val matchesSearch = if (searchQuery.isEmpty()) true else {
                     meal.mealName.lowercase().contains(searchQuery) ||
                     meal.restaurantName.lowercase().contains(searchQuery) ||
                     meal.description.lowercase().contains(searchQuery)
                 }
 
-                // Filtr kategorii
+                // Category filter
                 val mealCategories = meal.category.split(Regex(",\\s*")).map { it.trim() }
-                val hasCategorySelection = selectedLabels.any { it != "Z przepisem" }
-                val hasRecipeSelection = selectedLabels.contains("Z przepisem")
+                val hasCategorySelection = selectedCategories.any { it != "Z przepisem" }
+                val hasRecipeSelection = selectedCategories.contains("Z przepisem")
                 
                 val categoryMatch = if (!hasCategorySelection) true else {
-                    selectedLabels.any { sel -> sel != "Z przepisem" && mealCategories.contains(sel) }
+                    selectedCategories.any { sel -> sel != "Z przepisem" && mealCategories.contains(sel) }
                 }
                 val recipeMatch = if (!hasRecipeSelection) true else {
                     meal.recipeId != null
                 }
+
+                // Restaurant filter
+                val restaurantMatch = if (selectedRestaurants.isEmpty()) true else {
+                    selectedRestaurants.contains(meal.restaurantName)
+                }
                 
-                matchesSearch && categoryMatch && recipeMatch
+                matchesSearch && categoryMatch && recipeMatch && restaurantMatch
             }
             
             if (filteredMeals.isEmpty()) {
@@ -144,6 +170,8 @@ class DiaryActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        loadCategories()
+        loadRestaurants()
         loadMeals()
     }
 }

@@ -3,12 +3,12 @@ package com.example.yummydiary
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.text.Editable
-import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,12 +17,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.osmdroid.bonuspack.location.NominatimPOIProvider
-import org.osmdroid.bonuspack.location.POI
-import org.osmdroid.util.GeoPoint
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -44,10 +39,8 @@ class AddMealActivity : BaseActivity() {
     private var currentRecipeId: Int? = null
     private var photoFile: File? = null
     private var editingMealId: Int? = null
+    private var restaurantId: Long? = null
     private var originalDate: Long? = null
-
-    private var selectedLatitude: Double? = null
-    private var selectedLongitude: Double? = null
 
     private val categories = mutableListOf("Obiad", "Śniadanie", "Kolacja", "Deser")
 
@@ -94,18 +87,23 @@ class AddMealActivity : BaseActivity() {
         
         editingMealId = intent.getIntExtra("MEAL_ID", -1).takeIf { it != -1 }
         
-        if (editingMealId != null) {
-            setToolbarTitle("Edytuj danie")
-        } else {
-            setToolbarTitle("Dodaj nowe danie")
-        }
-
         initializeViews()
         setupCategories()
 
         if (editingMealId != null) {
+            setToolbarTitle("Edytuj danie")
             loadMealData()
             btnSaveMeal.text = "Zapisz zmiany"
+        } else {
+            setToolbarTitle("Dodaj nowe danie")
+            
+            // Handle incoming restaurant data from Map
+            restaurantId = intent.getLongExtra("RESTAURANT_ID", -1L).takeIf { it != -1L }
+            val rName = intent.getStringExtra("RESTAURANT_NAME")
+            val rAddress = intent.getStringExtra("RESTAURANT_ADDRESS")
+            
+            if (rName != null) etRestaurantName.setText(rName)
+            if (rAddress != null) etRestaurantAddress.setText(rAddress)
         }
 
         btnSaveMeal.setOnClickListener {
@@ -130,53 +128,6 @@ class AddMealActivity : BaseActivity() {
             }
             addRecipeLauncher.launch(intent)
         }
-    }
-
-    private fun searchRestaurants(query: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val poiProvider = NominatimPOIProvider(packageName)
-                // NominatimPOIProvider doesn't have a simple keyword search that isn't location-based.
-                // Searching around a fixed point (e.g., Wroclaw Rynek).
-                val wroclaw = GeoPoint(51.1099, 17.0318)
-                val pois = poiProvider.getPOICloseTo(wroclaw, query, 20, 0.1)
-                
-                withContext(Dispatchers.Main) {
-                    if (pois != null && pois.isNotEmpty()) {
-                        showPoiSelectionDialog(pois, query)
-                    } else {
-                        Toast.makeText(this@AddMealActivity, "Nie znaleziono restauracji dla: $query", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@AddMealActivity, "Błąd wyszukiwania: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    private fun showPoiSelectionDialog(pois: List<POI>, query: String) {
-        val names = pois.map { 
-            // In Nominatim POI, mType often contains the name, and mDescription contains the address
-            val mainName = it.mDescription?.split(",")?.firstOrNull()?.trim() ?: query
-            val address = it.mDescription ?: ""
-            "$mainName\n$address"
-        }.toTypedArray()
-
-        android.app.AlertDialog.Builder(this)
-            .setTitle("Znalezione restauracje")
-            .setItems(names) { _, which ->
-                val selected = pois[which]
-                val mainName = selected.mDescription?.split(",")?.firstOrNull()?.trim() ?: query
-                etRestaurantName.setText(mainName)
-                etRestaurantAddress.setText(selected.mDescription ?: "")
-                selectedLatitude = selected.mLocation.latitude
-                selectedLongitude = selected.mLocation.longitude
-            }
-            .setNegativeButton("Anuluj", null)
-            .show()
     }
 
     private fun showImageSourceDialog() {
@@ -225,18 +176,6 @@ class AddMealActivity : BaseActivity() {
     private fun initializeViews() {
         etRestaurantName = findViewById(R.id.etRestaurantName)
         etRestaurantAddress = findViewById(R.id.etRestaurantAddress)
-        
-        // Automatyczne podpowiedzi po wpisaniu 3 znaków
-        etRestaurantName.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (s != null && s.length == 4) { // Wyzwalamy przy 4 znakach, żeby nie spamować
-                    searchRestaurants(s.toString())
-                }
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
         etMealName = findViewById(R.id.etMealName)
         etDescription = findViewById(R.id.etDescription)
         cgCategories = findViewById(R.id.cgCategories)
@@ -261,6 +200,7 @@ class AddMealActivity : BaseActivity() {
                 selectedImageUri = it.imagePath
                 currentRecipeId = it.recipeId
                 originalDate = it.date
+                restaurantId = it.restaurantId
                 
                 if (it.imagePath != null) {
                     ivMealPhoto.visibility = View.VISIBLE
@@ -336,8 +276,21 @@ class AddMealActivity : BaseActivity() {
             .show()
     }
 
+    private fun playAddMealSound() {
+        try {
+            val mediaPlayer = MediaPlayer.create(this, R.raw.youpi)
+            mediaPlayer.setOnCompletionListener { mp ->
+                mp.release()
+            }
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun saveMeal() {
-        val restaurantName = etRestaurantName.text.toString()
+        val rName = etRestaurantName.text.toString()
+        val rAddress = etRestaurantAddress.text.toString()
         val mealName = etMealName.text.toString()
         val description = etDescription.text.toString()
         
@@ -360,25 +313,37 @@ class AddMealActivity : BaseActivity() {
             return
         }
 
-        val meal = Meal(
-            id = editingMealId ?: 0,
-            restaurantName = if (restaurantName.isEmpty()) "" else restaurantName,
-            restaurantAddress = etRestaurantAddress.text.toString(),
-            mealName = mealName,
-            category = categoryString,
-            description = description,
-            rating = ratingBar.rating,
-            date = originalDate ?: System.currentTimeMillis(),
-            imagePath = selectedImageUri,
-            recipeId = currentRecipeId,
-            latitude = selectedLatitude,
-            longitude = selectedLongitude
-        )
-
         lifecycleScope.launch {
             val database = AppDatabase.getDatabase(this@AddMealActivity)
+            
+            // If we have a restaurantId (from map), ensure it's in the restaurants table
+            if (restaurantId != null && rName.isNotEmpty()) {
+                val restaurant = Restaurant(
+                    id = restaurantId!!,
+                    name = rName,
+                    address = rAddress,
+                    category = intent.getStringExtra("RESTAURANT_CATEGORY") ?: "gastronomia"
+                )
+                database.restaurantDao().insertRestaurant(restaurant)
+            }
+
+            val meal = Meal(
+                id = editingMealId ?: 0,
+                restaurantId = restaurantId,
+                restaurantName = rName,
+                restaurantAddress = rAddress,
+                mealName = mealName,
+                category = categoryString,
+                description = description,
+                rating = ratingBar.rating,
+                date = originalDate ?: System.currentTimeMillis(),
+                imagePath = selectedImageUri,
+                recipeId = currentRecipeId
+            )
+
             if (editingMealId == null) {
                 database.mealDao().insertMeal(meal)
+                playAddMealSound()
                 Toast.makeText(this@AddMealActivity, "Danie zapisane!", Toast.LENGTH_SHORT).show()
             } else {
                 database.mealDao().updateMeal(meal)
