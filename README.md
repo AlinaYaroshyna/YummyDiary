@@ -16,7 +16,7 @@ YummyDiary to aplikacja na system Android, która pozwala pasjonatom jedzenia do
 
 -   **Język**: Kotlin
 -   **Baza danych**: Room Database (SQLite) – lokalne przechowywanie danych i zdjęć.
--   **Mapy**: osmdroid + osmbonuspack (OpenStreetMap).
+-   **Mapy**: osmdroid (OpenStreetMap).
 -   **Architektura**: MVVM (ViewModel, LiveData, Coroutines).
 -   **UI**: Material Design 3.
 
@@ -27,7 +27,7 @@ YummyDiary to aplikacja na system Android, która pozwala pasjonatom jedzenia do
 ![Mapa_nawigacji](Mapa_nawigacji_po_ekranach.jpg)
 
 ## Widok Bazy Danych
-![Schemat bazy danych](Schemat_bazy_danych.png)
+![Schemat bazy danych](Schemat_bd.png)
 Schemat bazy danych został zaprojektowany tak, aby umożliwić relacyjne powiązanie posiłków z ich przepisami:
 -   `meals`: Przechowuje informacje o miejscu, ocenie i lokalizacji GPS.
 -   `recipes`: Przechowuje szczegóły przygotowania dania.
