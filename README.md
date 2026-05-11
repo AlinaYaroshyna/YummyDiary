@@ -31,3 +31,4 @@ YummyDiary to aplikacja na system Android, która pozwala pasjonatom jedzenia do
 Schemat bazy danych został zaprojektowany tak, aby umożliwić relacyjne powiązanie posiłków z ich przepisami:
 -   `meals`: Przechowuje informacje o miejscu, ocenie i lokalizacji GPS.
 -   `recipes`: Przechowuje szczegóły przygotowania dania.
+-   `restaurants`: Przechowuje dane o miejscach pobrane z OpenStreetMap (OMS)
