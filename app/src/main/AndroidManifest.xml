@@ -32,7 +32,7 @@
         <activity android:name=".AddMealActivity" android:exported="true"/>
         <activity android:name=".MealMapActivity" android:exported="true"/>
         <activity android:name=".AllRecipesActivity" android:exported="true"/>
-        <activity android:name=".AboutAuthorsActivity" android:exported="true"/>
+        <activity android:name=".HowToUseActivity" android:exported="true"/>
         <activity android:name=".AddRecipeActivity" android:exported="true"/>
         <activity android:name=".MealDetailsActivity" android:exported="true"/>
         <activity android:name=".RecipeDetailsActivity" android:exported="true"/>

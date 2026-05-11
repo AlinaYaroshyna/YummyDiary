@@ -3,6 +3,7 @@ package com.example.yummydiary
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -38,6 +39,7 @@ class AddMealActivity : BaseActivity() {
     private var currentRecipeId: Int? = null
     private var photoFile: File? = null
     private var editingMealId: Int? = null
+    private var restaurantId: Long? = null
     private var originalDate: Long? = null
 
     private val categories = mutableListOf("Obiad", "Śniadanie", "Kolacja", "Deser")
@@ -85,18 +87,23 @@ class AddMealActivity : BaseActivity() {
         
         editingMealId = intent.getIntExtra("MEAL_ID", -1).takeIf { it != -1 }
         
-        if (editingMealId != null) {
-            setToolbarTitle("Edytuj danie")
-        } else {
-            setToolbarTitle("Dodaj nowe danie")
-        }
-
         initializeViews()
         setupCategories()
 
         if (editingMealId != null) {
+            setToolbarTitle("Edytuj danie")
             loadMealData()
             btnSaveMeal.text = "Zapisz zmiany"
+        } else {
+            setToolbarTitle("Dodaj nowe danie")
+            
+            // Handle incoming restaurant data from Map
+            restaurantId = intent.getLongExtra("RESTAURANT_ID", -1L).takeIf { it != -1L }
+            val rName = intent.getStringExtra("RESTAURANT_NAME")
+            val rAddress = intent.getStringExtra("RESTAURANT_ADDRESS")
+            
+            if (rName != null) etRestaurantName.setText(rName)
+            if (rAddress != null) etRestaurantAddress.setText(rAddress)
         }
 
         btnSaveMeal.setOnClickListener {
@@ -193,6 +200,7 @@ class AddMealActivity : BaseActivity() {
                 selectedImageUri = it.imagePath
                 currentRecipeId = it.recipeId
                 originalDate = it.date
+                restaurantId = it.restaurantId
                 
                 if (it.imagePath != null) {
                     ivMealPhoto.visibility = View.VISIBLE
@@ -268,8 +276,21 @@ class AddMealActivity : BaseActivity() {
             .show()
     }
 
+    private fun playAddMealSound() {
+        try {
+            val mediaPlayer = MediaPlayer.create(this, R.raw.youpi)
+            mediaPlayer.setOnCompletionListener { mp ->
+                mp.release()
+            }
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun saveMeal() {
-        val restaurantName = etRestaurantName.text.toString()
+        val rName = etRestaurantName.text.toString()
+        val rAddress = etRestaurantAddress.text.toString()
         val mealName = etMealName.text.toString()
         val description = etDescription.text.toString()
         
@@ -292,23 +313,37 @@ class AddMealActivity : BaseActivity() {
             return
         }
 
-        val meal = Meal(
-            id = editingMealId ?: 0,
-            restaurantName = if (restaurantName.isEmpty()) "" else restaurantName,
-            restaurantAddress = etRestaurantAddress.text.toString(),
-            mealName = mealName,
-            category = categoryString,
-            description = description,
-            rating = ratingBar.rating,
-            date = originalDate ?: System.currentTimeMillis(),
-            imagePath = selectedImageUri,
-            recipeId = currentRecipeId
-        )
-
         lifecycleScope.launch {
             val database = AppDatabase.getDatabase(this@AddMealActivity)
+            
+            // If we have a restaurantId (from map), ensure it's in the restaurants table
+            if (restaurantId != null && rName.isNotEmpty()) {
+                val restaurant = Restaurant(
+                    id = restaurantId!!,
+                    name = rName,
+                    address = rAddress,
+                    category = intent.getStringExtra("RESTAURANT_CATEGORY") ?: "gastronomia"
+                )
+                database.restaurantDao().insertRestaurant(restaurant)
+            }
+
+            val meal = Meal(
+                id = editingMealId ?: 0,
+                restaurantId = restaurantId,
+                restaurantName = rName,
+                restaurantAddress = rAddress,
+                mealName = mealName,
+                category = categoryString,
+                description = description,
+                rating = ratingBar.rating,
+                date = originalDate ?: System.currentTimeMillis(),
+                imagePath = selectedImageUri,
+                recipeId = currentRecipeId
+            )
+
             if (editingMealId == null) {
                 database.mealDao().insertMeal(meal)
+                playAddMealSound()
                 Toast.makeText(this@AddMealActivity, "Danie zapisane!", Toast.LENGTH_SHORT).show()
             } else {
                 database.mealDao().updateMeal(meal)

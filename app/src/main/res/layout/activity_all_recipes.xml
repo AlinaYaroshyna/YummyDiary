@@ -22,14 +22,35 @@
         android:autofillHints="name"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cgRecipeCategories"
+    <HorizontalScrollView
+        android:id="@+id/hsvCategories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        app:singleSelection="false"
-        app:layout_constraintTop_toBottomOf="@id/etSearchRecipes" />
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/etSearchRecipes">
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cgRecipeCategories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            app:singleSelection="false" />
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+        android:id="@+id/hsvRestaurants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/hsvCategories">
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cgRecipeRestaurants"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            app:singleSelection="false" />
+    </HorizontalScrollView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRecipes"
@@ -37,7 +58,7 @@
         android:layout_height="0dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/cgRecipeCategories"
+        app:layout_constraintTop_toBottomOf="@id/hsvRestaurants"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

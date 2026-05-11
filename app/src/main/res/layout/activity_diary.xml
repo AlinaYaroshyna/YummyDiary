@@ -27,12 +27,31 @@
         android:id="@+id/categoryScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/etSearchMeals">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupCategories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="false"
+            app:selectionRequired="false">
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+        android:id="@+id/restaurantScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingBottom="8dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/categoryScrollView">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupRestaurants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:singleSelection="false"
@@ -47,18 +66,18 @@
         android:paddingHorizontal="8dp"
         android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/categoryScrollView"
+        app:layout_constraintTop_toBottomOf="@id/restaurantScrollView"
         tools:listitem="@layout/item_diary_meal" />
 
     <TextView
         android:id="@+id/tvEmptyState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Brak dań w tej kategorii"
+        android:text="Brak dań spełniających kryteria"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/categoryScrollView" />
+        app:layout_constraintTop_toBottomOf="@id/restaurantScrollView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

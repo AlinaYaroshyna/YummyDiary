@@ -87,9 +87,9 @@ open class BaseActivity : AppCompatActivity(), NavigationView.OnNavigationItemSe
                     startActivity(Intent(this, SettingsActivity::class.java))
                 }
             }
-            R.id.nav_about -> {
-                if (this !is AboutAuthorsActivity) {
-                    startActivity(Intent(this, AboutAuthorsActivity::class.java))
+            R.id.nav_how_to_use -> {
+                if (this !is HowToUseActivity) {
+                    startActivity(Intent(this, HowToUseActivity::class.java))
                 }
             }
         }

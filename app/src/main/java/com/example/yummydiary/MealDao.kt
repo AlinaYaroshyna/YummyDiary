@@ -28,6 +28,9 @@ interface MealDao {
     @Query("SELECT DISTINCT category FROM meals")
     suspend fun getAllCategories(): List<String>
 
+    @Query("SELECT DISTINCT restaurantName FROM meals WHERE restaurantName IS NOT NULL AND restaurantName != ''")
+    suspend fun getAllRestaurantNames(): List<String>
+
     @Query("SELECT * FROM meals WHERE recipeId IS NOT NULL ORDER BY date DESC")
     suspend fun getMealsWithRecipes(): List<Meal>
 
