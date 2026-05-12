@@ -9,35 +9,48 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryRed,
+    secondary = PrimaryYellow,
+    tertiary = PrimaryBlue,
+    background = OnBackgroundDark,
+    surface = OnBackgroundDark,
+    onPrimary = Color.White,
+    onSecondary = PrimaryDark,
+    onTertiary = PrimaryDark,
+    onBackground = Color.White,
+    onSurface = Color.White,
+    outline = Color.LightGray,
+    surfaceVariant = Color(0xFF555555) // Nieco jaśniejszy od tła 0xFF454545
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    primaryContainer = LightPrimaryContainer,
+    onPrimaryContainer = LightOnPrimaryContainer,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
+    background = LightBackground,
+    onBackground = LightOnBackground,
+    surface = LightSurface,
+    onSurface = LightOnSurface
 )
 
 @Composable
 fun YummyDiaryTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Disable dynamic color by default to use our custom palette
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -48,6 +61,25 @@ fun YummyDiaryTheme(
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            // W trybie jasnym używamy PrimaryRed dla paska stanu, a w ciemnym koloru tła.
+            val statusBarColor = if (darkTheme) colorScheme.background else colorScheme.primary
+            window.statusBarColor = statusBarColor.toArgb()
+            
+            // Pasek nawigacji zazwyczaj pasuje do tła aplikacji.
+            window.navigationBarColor = colorScheme.background.toArgb()
+
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // isAppearanceLightStatusBars = true oznacza ciemne ikony (dla jasnego tła).
+            // PrimaryRed (0xFFF09494) jest wystarczająco jasny, by wymagać ciemnych ikon.
+            insetsController.isAppearanceLightStatusBars = !darkTheme
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
+        }
     }
 
     MaterialTheme(

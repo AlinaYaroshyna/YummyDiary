@@ -70,6 +70,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
+    implementation(libs.androidx.material.icons.extended)
+
     implementation(libs.glide)
     ksp(libs.glide.compiler)
 }

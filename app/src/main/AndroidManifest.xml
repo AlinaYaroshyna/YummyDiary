@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.YummyDiary">
 
+        <!-- Główny ekran aplikacji (Menu) -->
         <activity
             android:name=".MenuActivity"
             android:exported="true"
@@ -25,19 +26,20 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-
             </intent-filter>
         </activity>
-        <activity android:name=".DiaryActivity" android:exported="true"/>
-        <activity android:name=".AddMealActivity" android:exported="true"/>
-        <activity android:name=".MealMapActivity" android:exported="true"/>
-        <activity android:name=".AllRecipesActivity" android:exported="true"/>
-        <activity android:name=".HowToUseActivity" android:exported="true"/>
-        <activity android:name=".AddRecipeActivity" android:exported="true"/>
-        <activity android:name=".MealDetailsActivity" android:exported="true"/>
-        <activity android:name=".RecipeDetailsActivity" android:exported="true"/>
-        <activity android:name=".SettingsActivity" android:exported="true"/>
-        <activity android:name=".EditCategoriesActivity" android:exported="true"/>
+
+        <!-- Pozostałe aktywności -->
+        <activity android:name=".DiaryActivity" android:exported="false"/>
+        <activity android:name=".AddMealActivity" android:exported="false"/>
+        <activity android:name=".MealMapActivity" android:exported="false"/>
+        <activity android:name=".AllRecipesActivity" android:exported="false"/>
+        <activity android:name=".HowToUseActivity" android:exported="false"/>
+        <activity android:name=".AddRecipeActivity" android:exported="false"/>
+        <activity android:name=".MealDetailsActivity" android:exported="false"/>
+        <activity android:name=".RecipeDetailsActivity" android:exported="false"/>
+        <activity android:name=".SettingsActivity" android:exported="false"/>
+        <activity android:name=".EditCategoriesActivity" android:exported="false"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

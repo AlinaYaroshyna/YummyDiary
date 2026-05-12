@@ -3,25 +3,25 @@
 
     <!-- GŁÓWNY MOTYW APLIKACJI -->
     <style name="Theme.YummyDiary" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#E8A0A0</item>
-        <item name="colorPrimaryDark">#E8A0A0</item>
-        <item name="colorAccent">#E8A0A0</item>
-        <item name="android:statusBarColor">#E8A0A0</item>
-        <item name="android:windowBackground">#121212</item>
+        <item name="colorPrimary">#F09494</item>
+        <item name="colorPrimaryDark">#F09494</item>
+        <item name="colorAccent">#F09494</item>
+        <item name="android:statusBarColor">#F09494</item>
+        <item name="android:windowBackground">#F8F9FA</item>
 
-        <!-- Domyślne kolory dla reszty aplikacji (można dostosować) -->
-        <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:textColorSecondary">#BDBDBD</item>
+        <!-- Domyślne kolory dla reszty aplikacji -->
+        <item name="android:textColorPrimary">#1A1C1E</item>
+        <item name="android:textColorSecondary">#333333</item>
 
-        <!-- Motyw dla ekranu ustawień - CIEMNY -->
-        <item name="preferenceTheme">@style/DarkPreferenceTheme</item>
+        <!-- Motyw dla ekranu ustawień -->
+        <item name="preferenceTheme">@style/PreferenceTheme</item>
     </style>
 
-    <style name="DarkPreferenceTheme" parent="@style/PreferenceThemeOverlay">
-        <item name="android:background">#121212</item>
-        <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:textColorSecondary">#BDBDBD</item>
-        <item name="colorAccent">#E8A0A0</item>
+    <style name="PreferenceTheme" parent="@style/PreferenceThemeOverlay">
+        <item name="android:background">#F8F9FA</item>
+        <item name="android:textColorPrimary">#1A1C1E</item>
+        <item name="android:textColorSecondary">#333333</item>
+        <item name="colorAccent">#F09494</item>
     </style>
 
     <style name="Base.Theme.YummyDiary" parent="Theme.YummyDiary">

@@ -1,108 +1,134 @@
 package com.example.yummydiary
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.TextView
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.yummydiary.ui.theme.*
 
-class RecipeDetailsActivity : BaseActivity() {
+class RecipeDetailsActivity : ComponentActivity() {
 
-    private lateinit var tvRecipeMealName: TextView
-    private lateinit var tvRecipeRestaurantName: TextView
-    private lateinit var tvRecipeIngredients: TextView
-    private lateinit var tvRecipeInstructions: TextView
-    private lateinit var tvRecipeInstructionsLabel: TextView
-
-    private lateinit var database: AppDatabase
-    private var recipeId: Int = -1
+    private val viewModel: RecipeViewModel by viewModels {
+        val database = AppDatabase.getDatabase(applicationContext)
+        RecipeViewModel.Factory(RecipeRepository(database.recipeDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_recipe_details)
-        setToolbarTitle("Szczegóły przepisu")
-
-        database = AppDatabase.getDatabase(this)
-        recipeId = intent.getIntExtra("RECIPE_ID", -1)
-
-        initializeViews()
-        loadRecipeDetails()
-
-        findViewById<android.widget.Button>(R.id.btnDeleteRecipe).setOnClickListener {
-            deleteRecipe()
+        val recipeId = intent.getIntExtra("RECIPE_ID", -1)
+        if (recipeId != -1) {
+            viewModel.loadRecipeById(recipeId)
+        } else {
+            finish()
         }
 
-        findViewById<android.widget.Button>(R.id.btnEditRecipe).setOnClickListener {
-            val intent = android.content.Intent(this, AddRecipeActivity::class.java).apply {
-                putExtra("RECIPE_ID", recipeId)
-            }
-            startActivity(intent)
-        }
-    }
-
-    private fun deleteRecipe() {
-        android.app.AlertDialog.Builder(this)
-            .setTitle("Usuń przepis")
-            .setMessage("Czy na pewno chcesz usunąć ten przepis?")
-            .setPositiveButton("Usuń") { _, _ ->
-                lifecycleScope.launch {
-                    database.recipeDao().deleteRecipeById(recipeId)
-                    android.widget.Toast.makeText(this@RecipeDetailsActivity, "Przepis usunięty", android.widget.Toast.LENGTH_SHORT).show()
-                    finish()
+        setContent {
+            YummyDiaryTheme {
+                val recipe by viewModel.selectedRecipe.collectAsState()
+                
+                recipe?.let { currentRecipe ->
+                    RecipeDetailsScreen(
+                        recipe = currentRecipe,
+                        onBack = { finish() },
+                        onEdit = {
+                            val intent = Intent(this, AddRecipeActivity::class.java).apply {
+                                putExtra("RECIPE_ID", currentRecipe.id)
+                            }
+                            startActivity(intent)
+                        },
+                        onDelete = {
+                            viewModel.deleteRecipe(currentRecipe.id) {
+                                finish()
+                            }
+                        }
+                    )
                 }
             }
-            .setNegativeButton("Anuluj", null)
-            .show()
-    }
-
-    private fun initializeViews() {
-        tvRecipeMealName = findViewById(R.id.tvRecipeMealName)
-        tvRecipeRestaurantName = findViewById(R.id.tvRecipeRestaurantName)
-        tvRecipeIngredients = findViewById(R.id.tvRecipeIngredients)
-        tvRecipeInstructions = findViewById(R.id.tvRecipeInstructions)
-        tvRecipeInstructionsLabel = findViewById(R.id.tvRecipeInstructionsLabel)
-    }
-
-    private fun loadRecipeDetails() {
-        if (recipeId == -1) {
-            finish()
-            return
         }
+    }
+}
 
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(this@RecipeDetailsActivity)
-            // Pobieramy przepis wraz z powiązanym daniem, aby wyświetlić nazwę i restaurację
-            val allRecipes = db.recipeDao().getAllRecipesWithMeals()
-            val recipeWithMeal = allRecipes.find { it.recipe.id == recipeId }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecipeDetailsScreen(
+    recipe: Recipe,
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("SZCZEGÓŁY PRZEPISU", fontWeight = FontWeight.Black, letterSpacing = 2.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wstecz",
+                            tint = PrimaryDark
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edytuj", tint = PrimaryDark)
+                    }
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Usuń", tint = PrimaryDark)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PrimaryGreen,
+                    titleContentColor = PrimaryDark
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                text = "Składniki",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = recipe.ingredients,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
 
-            if (recipeWithMeal != null) {
-                displayRecipe(recipeWithMeal)
-            } else {
-                finish()
+            if (!recipe.instructions.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Instrukcje",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = recipe.instructions,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
-        }
-    }
-
-    private fun displayRecipe(recipeWithMeal: RecipeWithMeal) {
-        tvRecipeMealName.text = recipeWithMeal.meal?.mealName ?: "Nieznane danie"
-        
-        val restaurant = recipeWithMeal.meal?.restaurantName
-        if (restaurant.isNullOrEmpty()) {
-            tvRecipeRestaurantName.text = "Własny przepis"
-        } else {
-            tvRecipeRestaurantName.text = restaurant
-        }
-
-        tvRecipeIngredients.text = recipeWithMeal.recipe.ingredients
-        
-        val instructions = recipeWithMeal.recipe.instructions
-        if (instructions.isNullOrBlank()) {
-            tvRecipeInstructionsLabel.visibility = View.GONE
-            tvRecipeInstructions.visibility = View.GONE
-        } else {
-            tvRecipeInstructionsLabel.visibility = View.VISIBLE
-            tvRecipeInstructions.visibility = View.VISIBLE
-            tvRecipeInstructions.text = instructions
         }
     }
 }

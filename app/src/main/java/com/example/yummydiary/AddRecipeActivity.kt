@@ -1,204 +1,206 @@
 package com.example.yummydiary
 
+import android.content.Intent
 import android.os.Bundle
-
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.yummydiary.ui.theme.*
 
-class AddRecipeActivity : BaseActivity() {
-    private lateinit var llIngredientsContainer: LinearLayout
-    private lateinit var etMealNameRecipe: EditText
-    private lateinit var tvMealNameDisplay: TextView
-    private lateinit var tvRestaurantNameDisplay: TextView
-    private lateinit var etInstructions: EditText
-    private val ingredientEdits = mutableListOf<EditText>()
-    private var editingRecipeId: Int? = null
+class AddRecipeActivity : ComponentActivity() {
+
+    private val viewModel: RecipeViewModel by viewModels {
+        val database = AppDatabase.getDatabase(applicationContext)
+        RecipeViewModel.Factory(RecipeRepository(database.recipeDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_recipe)
         
-        editingRecipeId = intent.getIntExtra("RECIPE_ID", -1).takeIf { it != -1 }
-        
+        val editingRecipeId = intent.getIntExtra("RECIPE_ID", -1).takeIf { it != -1 }
         if (editingRecipeId != null) {
-            setToolbarTitle("Edytuj przepis")
-        } else {
-            setToolbarTitle("Dodaj nowy przepis")
+            viewModel.loadRecipeById(editingRecipeId)
         }
 
-        val mealName = intent.getStringExtra("MEAL_NAME")
-        val restaurantName = intent.getStringExtra("RESTAURANT_NAME")
-
-        etMealNameRecipe = findViewById(R.id.etMealNameRecipe)
-        tvMealNameDisplay = findViewById(R.id.tvMealNameDisplay)
-        tvRestaurantNameDisplay = findViewById(R.id.tvRestaurantNameDisplay)
-
-        if (mealName.isNullOrEmpty() && editingRecipeId == null) {
-            etMealNameRecipe.visibility = android.view.View.VISIBLE
-            tvMealNameDisplay.visibility = android.view.View.GONE
-            tvRestaurantNameDisplay.text = "Własne danie"
-        } else {
-            // Sprawdzamy czy to edycja "Własnego dania" bez restauracji
-            if (editingRecipeId != null && restaurantName.isNullOrEmpty()) {
-                etMealNameRecipe.visibility = android.view.View.VISIBLE
-                tvMealNameDisplay.visibility = android.view.View.GONE
-                etMealNameRecipe.setText(mealName ?: "")
-                tvRestaurantNameDisplay.text = "Własne danie"
-            } else {
-                etMealNameRecipe.visibility = android.view.View.GONE
-                tvMealNameDisplay.visibility = android.view.View.VISIBLE
-                tvMealNameDisplay.text = mealName ?: ""
-                tvRestaurantNameDisplay.text = restaurantName ?: ""
-            }
-        }
-
-        llIngredientsContainer = findViewById(R.id.llIngredientsContainer)
-        val btnAddIngredient = findViewById<Button>(R.id.btnAddIngredient)
-        val btnFinalSave = findViewById<Button>(R.id.btnFinalSave)
-        etInstructions = findViewById(R.id.etInstructions)
-
-        if (editingRecipeId != null) {
-            loadRecipeDataForEditing()
-        }
-
-        btnAddIngredient.setOnClickListener { addNewIngredientField() }
-
-        btnFinalSave.setOnClickListener {
-            saveRecipeAndFinish(etInstructions.text.toString())
-        }
-    }
-
-    private fun loadRecipeDataForEditing() {
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(this@AddRecipeActivity)
-            val recipe = db.recipeDao().getRecipeById(editingRecipeId!!)
-            recipe?.let {
-                etInstructions.setText(it.instructions)
+        setContent {
+            YummyDiaryTheme {
+                val recipeToEdit by viewModel.selectedRecipe.collectAsState()
                 
-                // Pobieramy dane powiązanego posiłku, aby wypełnić pola nazwy/restauracji
-                val allRecipes = db.recipeDao().getAllRecipesWithMeals()
-                val recipeWithMeal = allRecipes.find { r -> r.recipe.id == editingRecipeId }
-                val meal = recipeWithMeal?.meal
+                var ingredients by remember { mutableStateOf(listOf("")) }
+                var instructions by remember { mutableStateOf("") }
+                var customMealName by remember { mutableStateOf("") }
+                
+                val mealName = intent.getStringExtra("MEAL_NAME") ?: ""
+                val restaurantName = intent.getStringExtra("RESTAURANT_NAME") ?: ""
+                val isStandalone = mealName.isEmpty() && editingRecipeId == null
 
-                if (meal != null) {
-                    if (meal.restaurantName.isEmpty()) {
-                        etMealNameRecipe.visibility = android.view.View.VISIBLE
-                        tvMealNameDisplay.visibility = android.view.View.GONE
-                        etMealNameRecipe.setText(meal.mealName)
-                        tvRestaurantNameDisplay.text = "Własne danie"
-                    } else {
-                        etMealNameRecipe.visibility = android.view.View.GONE
-                        tvMealNameDisplay.visibility = android.view.View.VISIBLE
-                        tvMealNameDisplay.text = meal.mealName
-                        tvRestaurantNameDisplay.text = meal.restaurantName
+                LaunchedEffect(recipeToEdit) {
+                    recipeToEdit?.let {
+                        ingredients = it.ingredients.split("\n")
+                        instructions = it.instructions ?: ""
                     }
                 }
 
-                // Wypełnianie składników
-                llIngredientsContainer.removeAllViews()
-                ingredientEdits.clear()
-                val ingredientsList = it.ingredients.split("\n")
-                ingredientsList.forEach { ingredient ->
-                    if (ingredient.isNotBlank()) {
-                        addNewIngredientField(ingredient)
-                    }
-                }
-                if (ingredientEdits.isEmpty()) addNewIngredientField()
-            }
-        }
-    }
-
-    private fun addNewIngredientField(text: String = "") {
-        val editText = EditText(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 0, 0, 8.toPx())
-            }
-            hint = "Składnik ${ingredientEdits.size + 1}"
-            setText(text)
-            setPadding(12.toPx(), 12.toPx(), 12.toPx(), 12.toPx())
-            setBackgroundResource(R.drawable.bg_edittext)
-            setTextColor(getColor(R.color.black))
-            setHintTextColor(android.graphics.Color.parseColor("#999999"))
-        }
-        llIngredientsContainer.addView(editText)
-        ingredientEdits.add(editText)
-    }
-
-    private fun saveRecipeAndFinish(instructions: String) {
-        val ingredients = ingredientEdits.map { it.text.toString() }
-            .filter { it.isNotBlank() }
-            .joinToString("\n")
-
-        val customMealName = etMealNameRecipe.text.toString()
-
-        if (etMealNameRecipe.visibility == android.view.View.VISIBLE && customMealName.isBlank()) {
-            Toast.makeText(this, "Podaj nazwę dania", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (ingredients.isEmpty()) {
-            Toast.makeText(this, "Dodaj przynajmniej jeden składnik", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(this@AddRecipeActivity)
-            val recipe = Recipe(
-                id = editingRecipeId ?: 0,
-                ingredients = ingredients,
-                instructions = instructions
-            )
-            
-            val recipeId: Long = if (editingRecipeId == null) {
-                db.recipeDao().insertRecipe(recipe)
-            } else {
-                db.recipeDao().updateRecipe(recipe)
-                editingRecipeId!!.toLong()
-            }
-
-            // Jeśli dodajemy/edytujemy przepis bezpośrednio (nie przez AddMealActivity)
-            if (etMealNameRecipe.visibility == android.view.View.VISIBLE) {
-                // Szukamy czy istnieje już Meal powiązany z tym przepisem
-                val allMeals = db.mealDao().getMealsWithRecipes()
-                val existingMeal = if (editingRecipeId != null) {
-                    allMeals.find { it.recipeId == editingRecipeId }
-                } else null
-
-                val meal = Meal(
-                    id = existingMeal?.id ?: 0,
-                    restaurantName = "",
-                    restaurantAddress = "",
-                    mealName = customMealName,
-                    category = "Własne",
-                    description = "Przepis",
-                    rating = existingMeal?.rating ?: 5f,
-                    date = existingMeal?.date ?: System.currentTimeMillis(),
-                    imagePath = existingMeal?.imagePath,
-                    recipeId = recipeId.toInt()
+                AddRecipeScreen(
+                    mealName = mealName,
+                    restaurantName = restaurantName,
+                    isStandalone = isStandalone,
+                    customMealName = customMealName,
+                    onCustomMealNameChange = { customMealName = it },
+                    ingredients = ingredients,
+                    onIngredientsChange = { ingredients = it },
+                    instructions = instructions,
+                    onInstructionsChange = { instructions = it },
+                    onSave = {
+                        val finalIngredients = ingredients.filter { it.isNotBlank() }.joinToString("\n")
+                        if (finalIngredients.isEmpty()) {
+                            Toast.makeText(this@AddRecipeActivity, "Dodaj składniki", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val recipe = Recipe(
+                                id = editingRecipeId ?: 0,
+                                ingredients = finalIngredients,
+                                instructions = instructions.takeIf { it.isNotBlank() }
+                            )
+                            viewModel.saveRecipe(recipe) { newId ->
+                                val resultIntent = Intent().apply {
+                                    putExtra("RECIPE_ID", newId.toInt())
+                                }
+                                setResult(RESULT_OK, resultIntent)
+                                Toast.makeText(this@AddRecipeActivity, "Przepis zapisany!", Toast.LENGTH_SHORT).show()
+                                finish()
+                            }
+                        }
+                    },
+                    onBack = { finish() }
                 )
-                
-                if (existingMeal == null) {
-                    db.mealDao().insertMeal(meal)
-                } else {
-                    db.mealDao().updateMeal(meal)
-                }
-                Toast.makeText(this@AddRecipeActivity, "Zapisano!", Toast.LENGTH_SHORT).show()
             }
-            
-            val resultIntent = android.content.Intent()
-            resultIntent.putExtra("RECIPE_ID", recipeId.toInt())
-            setResult(RESULT_OK, resultIntent)
-            finish()
         }
     }
+}
 
-    private fun Int.toPx(): Int = (this * resources.displayMetrics.density).toInt()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddRecipeScreen(
+    mealName: String,
+    restaurantName: String,
+    isStandalone: Boolean,
+    customMealName: String,
+    onCustomMealNameChange: (String) -> Unit,
+    ingredients: List<String>,
+    onIngredientsChange: (List<String>) -> Unit,
+    instructions: String,
+    onInstructionsChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onBack: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("DODAJ PRZEPIS", fontWeight = FontWeight.Black, letterSpacing = 2.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wstecz",
+                            tint = PrimaryDark
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PrimaryBlue,
+                    titleContentColor = PrimaryDark
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (isStandalone) {
+                OutlinedTextField(
+                    value = customMealName,
+                    onValueChange = onCustomMealNameChange,
+                    label = { Text("Nazwa dania") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Text(text = mealName, style = MaterialTheme.typography.headlineSmall)
+                Text(text = if (restaurantName.isEmpty()) "Własne danie" else restaurantName, style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Text(text = "Składniki:", style = MaterialTheme.typography.titleMedium)
+            ingredients.forEachIndexed { index, ingredient ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = ingredient,
+                        onValueChange = { newValue ->
+                            val newList = ingredients.toMutableList()
+                            newList[index] = newValue
+                            onIngredientsChange(newList)
+                        },
+                        modifier = Modifier.weight(1f),
+                        label = { Text("Składnik ${index + 1}") }
+                    )
+                    IconButton(onClick = {
+                        val newList = ingredients.toMutableList()
+                        newList.removeAt(index)
+                        onIngredientsChange(newList)
+                    }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Usuń")
+                    }
+                }
+            }
+            
+            Button(
+                onClick = { onIngredientsChange(ingredients + "") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryBlue,
+                    contentColor = PrimaryDark
+                )
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Dodaj składnik")
+            }
+
+            OutlinedTextField(
+                value = instructions,
+                onValueChange = onInstructionsChange,
+                label = { Text("Instrukcje (opcjonalnie)") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+
+            Button(
+                onClick = onSave,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryBlue,
+                    contentColor = PrimaryDark
+                )
+            ) {
+                Text("Zapisz przepis")
+            }
+        }
+    }
 }

@@ -1,135 +1,186 @@
 package com.example.yummydiary
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.launch
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.yummydiary.ui.theme.PrimaryDark
+import com.example.yummydiary.ui.theme.YummyDiaryTheme
 
-class EditCategoriesActivity : BaseActivity() {
+class EditCategoriesActivity : ComponentActivity() {
 
-    private lateinit var rvCategories: RecyclerView
-    private lateinit var adapter: CategoryAdapter
-    private lateinit var database: AppDatabase
+    private val viewModel: MealViewModel by viewModels {
+        val database = AppDatabase.getDatabase(applicationContext)
+        MealViewModel.Factory(MealRepository(database.mealDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_categories)
-        setToolbarTitle("Edytuj kategorie")
+        viewModel.loadAllData()
 
-        database = AppDatabase.getDatabase(this)
-        rvCategories = findViewById(R.id.rvCategories)
-        rvCategories.layoutManager = LinearLayoutManager(this)
-        
-        loadCategories()
+        setContent {
+            YummyDiaryTheme {
+                EditCategoriesScreen(
+                    viewModel = viewModel,
+                    onBackClick = { finish() }
+                )
+            }
+        }
     }
+}
 
-    private fun loadCategories() {
-        lifecycleScope.launch {
-            val dbCategories = database.mealDao().getAllCategories()
-            val uniqueCategories = dbCategories.flatMap { it.split(", ") }
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-                .distinct()
-                .toMutableList()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditCategoriesScreen(
+    viewModel: MealViewModel,
+    onBackClick: () -> Unit
+) {
+    val categories by viewModel.categories.collectAsState()
+    val context = LocalContext.current
 
-            adapter = CategoryAdapter(uniqueCategories) { category, action ->
-                when (action) {
-                    "EDIT" -> showEditDialog(category)
-                    "DELETE" -> showDeleteConfirmDialog(category)
+    var categoryToEdit by remember { mutableStateOf<String?>(null) }
+    var categoryToDelete by remember { mutableStateOf<String?>(null) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("EDYTUJ KATEGORIE", fontWeight = FontWeight.Black, letterSpacing = 2.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wstecz",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PrimaryDark,
+                    titleContentColor = Color.White
+                )
+            )
+        }
+    ) { padding ->
+        if (categories.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text("Brak kategorii do edycji", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories) { category ->
+                    CategoryItem(
+                        name = category,
+                        onEdit = { categoryToEdit = category },
+                        onDelete = { categoryToDelete = category }
+                    )
                 }
             }
-            rvCategories.adapter = adapter
+        }
+
+        // Dialog Edycji
+        categoryToEdit?.let { oldName ->
+            var newName by remember { mutableStateOf(oldName) }
+            AlertDialog(
+                onDismissRequest = { categoryToEdit = null },
+                title = { Text("Zmień nazwę kategorii") },
+                text = {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("Nazwa kategorii") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (newName.isNotBlank() && newName != oldName) {
+                            viewModel.updateCategoryName(oldName, newName)
+                            Toast.makeText(context, "Zaktualizowano!", Toast.LENGTH_SHORT).show()
+                        }
+                        categoryToEdit = null
+                    }) {
+                        Text("Zapisz")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { categoryToEdit = null }) {
+                        Text("Anuluj")
+                    }
+                }
+            )
+        }
+
+        // Dialog Usuwania
+        categoryToDelete?.let { category ->
+            AlertDialog(
+                onDismissRequest = { categoryToDelete = null },
+                title = { Text("Usuń kategorię") },
+                text = { Text("Czy na pewno chcesz usunąć kategorię '$category' ze wszystkich dań?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.deleteCategory(category)
+                        Toast.makeText(context, "Usunięto!", Toast.LENGTH_SHORT).show()
+                        categoryToDelete = null
+                    }) {
+                        Text("Usuń", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { categoryToDelete = null }) {
+                        Text("Anuluj")
+                    }
+                }
+            )
         }
     }
+}
 
-    private fun showEditDialog(oldName: String) {
-        val input = EditText(this)
-        input.setText(oldName)
-        AlertDialog.Builder(this)
-            .setTitle("Zmień nazwę kategorii")
-            .setView(input)
-            .setPositiveButton("Zapisz") { _, _ ->
-                val newName = input.text.toString().trim()
-                if (newName.isNotEmpty() && newName != oldName) {
-                    updateCategoryName(oldName, newName)
+@Composable
+fun CategoryItem(name: String, onEdit: () -> Unit, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Row {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edytuj", tint = MaterialTheme.colorScheme.primary)
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Usuń", tint = MaterialTheme.colorScheme.error)
                 }
             }
-            .setNegativeButton("Anuluj", null)
-            .show()
-    }
-
-    private fun showDeleteConfirmDialog(category: String) {
-        AlertDialog.Builder(this)
-            .setTitle("Usuń kategorię")
-            .setMessage("Czy na pewno chcesz usunąć kategorię '$category' ze wszystkich dań?")
-            .setPositiveButton("Usuń") { _, _ ->
-                deleteCategory(category)
-            }
-            .setNegativeButton("Anuluj", null)
-            .show()
-    }
-
-    private fun updateCategoryName(oldName: String, newName: String) {
-        lifecycleScope.launch {
-            val meals = database.mealDao().getMealsWithCategory(oldName)
-            meals.forEach { meal ->
-                val updatedCategories = meal.category.split(", ")
-                    .map { if (it.trim() == oldName) newName else it.trim() }
-                    .distinct()
-                    .joinToString(", ")
-                database.mealDao().updateMeal(meal.copy(category = updatedCategories))
-            }
-            Toast.makeText(this@EditCategoriesActivity, "Zaktualizowano!", Toast.LENGTH_SHORT).show()
-            loadCategories()
         }
-    }
-
-    private fun deleteCategory(category: String) {
-        lifecycleScope.launch {
-            val meals = database.mealDao().getMealsWithCategory(category)
-            meals.forEach { meal ->
-                val updatedCategories = meal.category.split(", ")
-                    .filter { it.trim() != category }
-                    .joinToString(", ")
-                database.mealDao().updateMeal(meal.copy(category = updatedCategories))
-            }
-            Toast.makeText(this@EditCategoriesActivity, "Usunięto!", Toast.LENGTH_SHORT).show()
-            loadCategories()
-        }
-    }
-
-    inner class CategoryAdapter(
-        private val categories: List<String>,
-        private val onClick: (String, String) -> Unit
-    ) : RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
-
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val tvName: TextView = view.findViewById(R.id.tvCategoryName)
-            val btnEdit: ImageButton = view.findViewById(R.id.btnEditCategory)
-            val btnDelete: ImageButton = view.findViewById(R.id.btnDeleteCategory)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_category_edit, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val category = categories[position]
-            holder.tvName.text = category
-            holder.btnEdit.setOnClickListener { onClick(category, "EDIT") }
-            holder.btnDelete.setOnClickListener { onClick(category, "DELETE") }
-        }
-
-        override fun getItemCount() = categories.size
     }
 }

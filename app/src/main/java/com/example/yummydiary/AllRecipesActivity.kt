@@ -1,147 +1,230 @@
 package com.example.yummydiary
 
-import android.os.Bundle
 import android.content.Intent
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.EditText
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
-import kotlinx.coroutines.launch
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.animation.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.yummydiary.ui.theme.*
 
-class AllRecipesActivity : BaseActivity() {
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: RecipeAdapter
-    private lateinit var cgCategories: ChipGroup
-    private lateinit var cgRestaurants: ChipGroup
-    private lateinit var etSearch: EditText
-    private var allRecipes: List<RecipeWithMeal> = emptyList()
+class AllRecipesActivity : ComponentActivity() {
+
+    private val viewModel: RecipeViewModel by viewModels {
+        val database = AppDatabase.getDatabase(applicationContext)
+        RecipeViewModel.Factory(RecipeRepository(database.recipeDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_all_recipes)
-        setToolbarTitle("Wszystkie przepisy")
+        viewModel.loadRecipes()
 
-        recyclerView = findViewById(R.id.rvRecipes)
-        cgCategories = findViewById(R.id.cgRecipeCategories)
-        cgRestaurants = findViewById(R.id.cgRecipeRestaurants)
-        etSearch = findViewById(R.id.etSearchRecipes)
+        setContent {
+            YummyDiaryTheme {
+                val recipes by viewModel.recipes.collectAsState()
+                val categories by viewModel.categories.collectAsState()
+                
+                var searchQuery by remember { mutableStateOf("") }
+                var selectedCategories by remember { mutableStateOf(setOf<String>()) }
 
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = RecipeAdapter(emptyList()) { recipeWithMeal ->
-            val intent = Intent(this, RecipeDetailsActivity::class.java).apply {
-                putExtra("RECIPE_ID", recipeWithMeal.recipe.id)
+                val filteredRecipes = recipes.filter { item ->
+                    val matchesSearch = searchQuery.isEmpty() || 
+                        (item.meal?.mealName?.contains(searchQuery, ignoreCase = true) ?: false) ||
+                        item.recipe.ingredients.contains(searchQuery, ignoreCase = true)
+                    
+                    val itemCats = item.meal?.category?.split(",")?.map { it.trim() } ?: emptyList()
+                    val matchesCategory = selectedCategories.isEmpty() || 
+                        selectedCategories.any { it in itemCats }
+                    
+                    matchesSearch && matchesCategory
+                }
+
+                RecipesScreen(
+                    recipes = filteredRecipes,
+                    categories = categories,
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it },
+                    selectedCategories = selectedCategories,
+                    onCategoryToggle = { category ->
+                        selectedCategories = if (category in selectedCategories) {
+                            selectedCategories - category
+                        } else {
+                            selectedCategories + category
+                        }
+                    },
+                    onRecipeClick = { recipeWithMeal ->
+                        val intent = Intent(this, RecipeDetailsActivity::class.java).apply {
+                            putExtra("RECIPE_ID", recipeWithMeal.recipe.id)
+                        }
+                        startActivity(intent)
+                    },
+                    onBack = { finish() }
+                )
             }
-            startActivity(intent)
-        }
-        recyclerView.adapter = adapter
-
-        setupSearch()
-        loadRecipes()
-    }
-
-    private fun setupSearch() {
-        etSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                applyFilters()
-            }
-        })
-    }
-
-    private fun loadRecipes() {
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(this@AllRecipesActivity)
-            allRecipes = db.recipeDao().getAllRecipesWithMeals()
-            adapter.updateData(allRecipes)
-            setupCategories()
-            setupRestaurants()
         }
     }
+}
 
-    private fun setupCategories() {
-        val categories = allRecipes.flatMap { it.meal?.category?.split(Regex(",\\s*")) ?: emptyList() }
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .distinct()
-            .sorted()
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun RecipesScreen(
+    recipes: List<RecipeWithMeal>,
+    categories: List<String>,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    selectedCategories: Set<String>,
+    onCategoryToggle: (String) -> Unit,
+    onRecipeClick: (RecipeWithMeal) -> Unit,
+    onBack: () -> Unit
+) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
 
-        cgCategories.removeAllViews()
-
-        categories.forEach { category ->
-            val chip = createChip(category, cgCategories)
-            chip.id = View.generateViewId()
-            cgCategories.addView(chip)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("WSZYSTKIE PRZEPISY", fontWeight = FontWeight.Black, letterSpacing = 2.sp) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wstecz",
+                            tint = PrimaryDark
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PrimaryGreen,
+                    titleContentColor = PrimaryDark
+                )
+            )
         }
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding)) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = { Text("Szukaj potrawy lub składnika...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryGreen,
+                    unfocusedBorderColor = PrimaryGreen.copy(alpha = 0.5f),
+                    focusedLabelColor = PrimaryGreen,
+                    cursorColor = PrimaryGreen
+                )
+            )
 
-        cgCategories.setOnCheckedStateChangeListener { _, _ ->
-            applyFilters()
-        }
-    }
-
-    private fun setupRestaurants() {
-        val restaurants = allRecipes.mapNotNull { it.meal?.restaurantName }
-            .filter { it.isNotEmpty() }
-            .distinct()
-            .sorted()
-
-        cgRestaurants.removeAllViews()
-
-        restaurants.forEach { restaurant ->
-            val chip = createChip(restaurant, cgRestaurants)
-            chip.id = View.generateViewId()
-            cgRestaurants.addView(chip)
-        }
-
-        cgRestaurants.setOnCheckedStateChangeListener { _, _ ->
-            applyFilters()
-        }
-    }
-
-    private fun applyFilters() {
-        val query = etSearch.text.toString().trim().lowercase()
-        
-        val selectedCategoryIds = cgCategories.checkedChipIds
-        val selectedCategories = selectedCategoryIds.map { id ->
-            cgCategories.findViewById<Chip>(id).text.toString()
-        }
-
-        val selectedRestaurantIds = cgRestaurants.checkedChipIds
-        val selectedRestaurants = selectedRestaurantIds.map { id ->
-            cgRestaurants.findViewById<Chip>(id).text.toString()
-        }
-
-        val filtered = allRecipes.filter { item ->
-            val matchesSearch = if (query.isEmpty()) true else {
-                val mealName = item.meal?.mealName?.lowercase() ?: ""
-                val ingredients = item.recipe.ingredients.lowercase()
-                mealName.contains(query) || ingredients.contains(query)
-            }
-
-            val matchesCategory = if (selectedCategories.isEmpty()) true else {
-                val mealCategories = item.meal?.category?.split(Regex(",\\s*"))?.map { it.trim() } ?: emptyList()
-                selectedCategories.any { label -> mealCategories.contains(label) }
+            FlowRow(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categories.forEach { category ->
+                    FilterChip(
+                        selected = category in selectedCategories,
+                        onClick = { onCategoryToggle(category) },
+                        label = { Text(category) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = PrimaryGreen,
+                            selectedLabelColor = PrimaryDark,
+                            containerColor = Color.Transparent,
+                            labelColor = if (isSystemInDarkTheme()) Color.White else PrimaryDark
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = category in selectedCategories,
+                            borderColor = PrimaryGreen.copy(alpha = 0.6f),
+                            selectedBorderColor = PrimaryGreen,
+                            borderWidth = 1.dp,
+                            selectedBorderWidth = 2.dp
+                        )
+                    )
+                }
             }
 
-            val matchesRestaurant = if (selectedRestaurants.isEmpty()) true else {
-                val restaurantName = item.meal?.restaurantName ?: ""
-                selectedRestaurants.contains(restaurantName)
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn() + slideInVertically()
+            ) {
+                if (recipes.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Brak przepisów", color = Color.Gray)
+                    }
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(recipes) { item ->
+                            RecipeCard(item, onClick = { onRecipeClick(item) })
+                        }
+                    }
+                }
             }
-
-            matchesSearch && matchesCategory && matchesRestaurant
         }
-        adapter.updateData(filtered)
     }
+}
 
-    private fun createChip(label: String, parent: ChipGroup): Chip {
-        val chip = LayoutInflater.from(this).inflate(R.layout.view_filter_chip, parent, false) as Chip
-        chip.text = label
-        return chip
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecipeCard(item: RecipeWithMeal, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = PrimaryDark,
+            contentColor = Color.White
+        )
+    ) {
+        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            AsyncImage(
+                model = item.meal?.imagePath ?: R.drawable.ic_launcher_background,
+                contentDescription = null,
+                modifier = Modifier.size(80.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column {
+                Text(
+                    text = item.meal?.mealName ?: "Bez nazwy",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = item.meal?.category ?: "Brak kategorii",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.LightGray
+                )
+                Text(
+                    text = "Składniki: ${item.recipe.ingredients.take(50)}...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    color = PrimaryGreen
+                )
+            }
+        }
     }
 }
