@@ -52,14 +52,14 @@ Aplikacja została zbudowana zgodnie z zasadami **Clean Architecture** przy uży
 - **Warstwa Repository**: ViewModel nie komunikuje się bezpośrednio z bazą. Korzysta z warstwy repozytorium, która decyduje, czy dane mają pochodzić z lokalnej bazy danych, czy (w przyszłości) z API.
 
 ### Efekt końcowy
-<img width="1080" height="2340" alt="Screenshot_20260516_131020_YummyDiary" src="https://github.com/user-attachments/assets/94754693-e182-439f-82e7-bf631134cfd9" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131127_YummyDiary" src="https://github.com/user-attachments/assets/21846477-52e7-4fba-83a9-85f792b258f0" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131300_YummyDiary" src="https://github.com/user-attachments/assets/3e2806e9-4e3a-4605-8c9e-22248e79ce85" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131443_YummyDiary" src="https://github.com/user-attachments/assets/62f37fed-fcc7-4959-afa6-47488d64289c" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131451_YummyDiary" src="https://github.com/user-attachments/assets/6f49ed06-8cb2-416f-9b89-e8388a6de0b3" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131518_YummyDiary" src="https://github.com/user-attachments/assets/98a43053-7035-45e8-be82-1659451d5069" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131532_YummyDiary" src="https://github.com/user-attachments/assets/d6dcab47-e7a9-4bfd-b12d-9af04eec21e8" />
-<img width="1080" height="2340" alt="Screenshot_20260516_131548_YummyDiary" src="https://github.com/user-attachments/assets/096042a3-76d4-4abb-bb14-4dc24de2a024" />
+<img width="270" height="585" alt="Screenshot_20260516_131020_YummyDiary" src="https://github.com/user-attachments/assets/94754693-e182-439f-82e7-bf631134cfd9" />
+<img width="270" height="585" alt="Screenshot_20260516_131127_YummyDiary" src="https://github.com/user-attachments/assets/21846477-52e7-4fba-83a9-85f792b258f0" />
+<img width="270" height="585" alt="Screenshot_20260516_131300_YummyDiary" src="https://github.com/user-attachments/assets/3e2806e9-4e3a-4605-8c9e-22248e79ce85" />
+<img width="270" height="585" alt="Screenshot_20260516_131443_YummyDiary" src="https://github.com/user-attachments/assets/62f37fed-fcc7-4959-afa6-47488d64289c" />
+<img width="270" height="585" alt="Screenshot_20260516_131451_YummyDiary" src="https://github.com/user-attachments/assets/6f49ed06-8cb2-416f-9b89-e8388a6de0b3" />
+<img width="270" height="585" alt="Screenshot_20260516_131518_YummyDiary" src="https://github.com/user-attachments/assets/98a43053-7035-45e8-be82-1659451d5069" />
+<img width="270" height="585" alt="Screenshot_20260516_131532_YummyDiary" src="https://github.com/user-attachments/assets/d6dcab47-e7a9-4bfd-b12d-9af04eec21e8" />
+<img width="270" height="585" alt="Screenshot_20260516_131548_YummyDiary" src="https://github.com/user-attachments/assets/096042a3-76d4-4abb-bb14-4dc24de2a024" />
 
 
 
