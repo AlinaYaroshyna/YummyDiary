@@ -20,6 +20,7 @@ YummyDiary to aplikacja na system Android, która pozwala pasjonatom jedzenia do
 -   **Architektura**: MVVM (ViewModel, LiveData, Coroutines).
 -   **UI**: Material Design 3.
 
+### Projekt Ekranów
   
 ![Mockups1](Mockups1.png)
 ![Mockups2](Mockups2.png)
@@ -49,3 +50,18 @@ Aplikacja została zbudowana zgodnie z zasadami **Clean Architecture** przy uży
 - **Reaktywność (LiveData/Flow)**: ViewModel udostępnia strumienie danych z bazy Room. Dzięki temu, gdy użytkownik doda nowy posiłek, lista w UI odświeża się automatycznie (bez przeładowywania ekranu).
 - **Coroutines (Współbieżność)**: Wszystkie operacje na bazie danych (zapis/odczyt) oraz ładowanie zdjęć odbywają się w tle za pomocą `viewModelScope`. Zapobiega to "zamrażaniu" interfejsu użytkownika (ANR).
 - **Warstwa Repository**: ViewModel nie komunikuje się bezpośrednio z bazą. Korzysta z warstwy repozytorium, która decyduje, czy dane mają pochodzić z lokalnej bazy danych, czy (w przyszłości) z API.
+
+### Efekt końcowy
+<img width="1080" height="2340" alt="Screenshot_20260516_131020_YummyDiary" src="https://github.com/user-attachments/assets/94754693-e182-439f-82e7-bf631134cfd9" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131127_YummyDiary" src="https://github.com/user-attachments/assets/21846477-52e7-4fba-83a9-85f792b258f0" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131300_YummyDiary" src="https://github.com/user-attachments/assets/3e2806e9-4e3a-4605-8c9e-22248e79ce85" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131443_YummyDiary" src="https://github.com/user-attachments/assets/62f37fed-fcc7-4959-afa6-47488d64289c" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131451_YummyDiary" src="https://github.com/user-attachments/assets/6f49ed06-8cb2-416f-9b89-e8388a6de0b3" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131518_YummyDiary" src="https://github.com/user-attachments/assets/98a43053-7035-45e8-be82-1659451d5069" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131532_YummyDiary" src="https://github.com/user-attachments/assets/d6dcab47-e7a9-4bfd-b12d-9af04eec21e8" />
+<img width="1080" height="2340" alt="Screenshot_20260516_131548_YummyDiary" src="https://github.com/user-attachments/assets/096042a3-76d4-4abb-bb14-4dc24de2a024" />
+
+
+
+
+
