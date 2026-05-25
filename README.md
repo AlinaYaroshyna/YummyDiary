@@ -51,6 +51,19 @@ Aplikacja została zbudowana zgodnie z zasadami **Clean Architecture** przy uży
 - **Coroutines (Współbieżność)**: Wszystkie operacje na bazie danych (zapis/odczyt) oraz ładowanie zdjęć odbywają się w tle za pomocą `viewModelScope`. Zapobiega to "zamrażaniu" interfejsu użytkownika (ANR).
 - **Warstwa Repository**: ViewModel nie komunikuje się bezpośrednio z bazą. Korzysta z warstwy repozytorium, która decyduje, czy dane mają pochodzić z lokalnej bazy danych, czy (w przyszłości) z API.
 
+### Strumienie danych w ViewModel
+1. `MealViewModel`
+W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych posiłków i ich metadanych:
+- meals (`StateFlow<List<Meal>>`): Główny strumień zawierający listę wszystkich zapisanych posiłków. Służy do wyświetlania dziennika i punktów na mapie.
+- categories (`StateFlow<List<String>>`): Strumień unikalnych kategorii dań (np. "Obiad", "Deser"). Łączy kategorie domyślne z tymi dodanymi przez użytkownika.
+- restaurants (`StateFlow<List<String>>`): Lista nazw restauracji pobrana z bazy, używana do podpowiedzi (autouzupełniania) przy dodawaniu nowego wpisu.
+- selectedMeal (`StateFlow<Meal?>`): Przechowuje dane konkretnego posiłku, gdy użytkownik wejdzie w tryb edycji lub szczegółów.
+2. `RecipeViewModel`
+W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych przepisów i ich metadanych:
+- recipes (`StateFlow<List<Recipe>>`): Strumień emitujący listę wszystkich zapisanych przepisów kulinarnych.
+- recipeCategories (`StateFlow<List<String>>`): Kategorie specyficzne dla przepisów (np. "Wegetariańskie", "Szybkie").
+- selectedRecipe (`StateFlow<Recipe?>`): Przechowuje aktualnie przeglądany lub edytowany przepis.
+
 ### Efekt końcowy
 <img width="270" height="585" alt="Screenshot_20260516_131020_YummyDiary" src="https://github.com/user-attachments/assets/94754693-e182-439f-82e7-bf631134cfd9" />
 <img width="270" height="585" alt="Screenshot_20260516_131127_YummyDiary" src="https://github.com/user-attachments/assets/21846477-52e7-4fba-83a9-85f792b258f0" />
