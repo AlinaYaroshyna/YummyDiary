@@ -53,12 +53,14 @@ Aplikacja została zbudowana zgodnie z zasadami **Clean Architecture** przy uży
 
 ### Strumienie danych w ViewModel
 1. `MealViewModel`
+   
 W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych posiłków i ich metadanych:
 - meals (`StateFlow<List<Meal>>`): Główny strumień zawierający listę wszystkich zapisanych posiłków. Służy do wyświetlania dziennika i punktów na mapie.
 - categories (`StateFlow<List<String>>`): Strumień unikalnych kategorii dań (np. "Obiad", "Deser"). Łączy kategorie domyślne z tymi dodanymi przez użytkownika.
 - restaurants (`StateFlow<List<String>>`): Lista nazw restauracji pobrana z bazy, używana do podpowiedzi (autouzupełniania) przy dodawaniu nowego wpisu.
 - selectedMeal (`StateFlow<Meal?>`): Przechowuje dane konkretnego posiłku, gdy użytkownik wejdzie w tryb edycji lub szczegółów.
 2. `RecipeViewModel`
+  
 W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych przepisów i ich metadanych:
 - recipes (`StateFlow<List<RecipeWithMeal>>`): Strumień emitujący listę wszystkich zapisanych przepisów kulinarnych.
 - recipeCategories (`StateFlow<List<String>>`): Kategorie specyficzne dla przepisów (np. "Wegetariańskie", "Szybkie").
@@ -79,8 +81,9 @@ W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych przepi
 - `deleteRecipe(id: Int, onComplete: () -> Unit)`: Usuwa przepis z bazy danych i odświeża listę.
 
 ### Warstwa Repozytorium
-1. MealRepository
-Zarządza danymi dotyczącymi dziennika posiłków i restauracji.
+1. `MealRepository`
+
+Zarządza danymi dotyczącymi dziennika dań.
 
 Zarządzanie Posiłkami:
 - `getAllMeals()`: Pobiera listę wszystkich zapisanych dań.
@@ -92,8 +95,9 @@ Metadane i Filtrowanie:
 - `getAllCategories()`: Pobiera listę unikalnych tagów/kategorii (np. Obiad, Deser).
 - `getAllRestaurantNames()`: Pobiera listę nazw restauracji do podpowiedzi.
 - `getMealsWithCategory(category)`: Filtruje listę dań według wybranego tagu
-2. RecipeRepository
-Odpowiada za logikę związaną z książką przepisów kulinarnych.
+2. `RecipeRepository`
+
+Odpowiada za logikę związaną z przepisami kulinarnymi.
 
 Relacje danych:
 - `getAllRecipesWithMeals()`: Zwraca listę przepisów wraz z powiązanymi z nimi informacjami o zjedzonych posiłkach (wykorzystuje klasę pośrednią `RecipeWithMeal`).
