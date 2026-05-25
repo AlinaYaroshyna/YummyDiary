@@ -60,9 +60,23 @@ W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych posił
 - selectedMeal (`StateFlow<Meal?>`): Przechowuje dane konkretnego posiłku, gdy użytkownik wejdzie w tryb edycji lub szczegółów.
 2. `RecipeViewModel`
 W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych przepisów i ich metadanych:
-- recipes (`StateFlow<List<Recipe>>`): Strumień emitujący listę wszystkich zapisanych przepisów kulinarnych.
+- recipes (`StateFlow<List<RecipeWithMeal>>`): Strumień emitujący listę wszystkich zapisanych przepisów kulinarnych.
 - recipeCategories (`StateFlow<List<String>>`): Kategorie specyficzne dla przepisów (np. "Wegetariańskie", "Szybkie").
 - selectedRecipe (`StateFlow<Recipe?>`): Przechowuje aktualnie przeglądany lub edytowany przepis.
+
+### Metody w ViewModel
+1. `MealViewModel`
+- `loadAllData()`: Główna funkcja odświeżająca. Pobiera z bazy listę wszystkich posiłków, restauracji oraz buduje listę kategorii (łączy domyślne: Obiad, Śniadanie, Kolacja, Deser z tymi zapisanymi w bazie).
+- `loadMealById(id: Int)`: Pobiera szczegółowe dane jednego konkretnego posiłku i ustawia je w strumieniu `selectedMeal`.
+- `deleteMeal(id: Int, onComplete: () -> Unit)`: Usuwa posiłek o podanym identyfikatorze i odświeża listę.
+- `saveMeal(meal: Meal, onComplete: () -> Unit)`: Zapisuje posiłek do bazy danych. Jeśli id wynosi 0, dodaje nowy wpis, w przeciwnym razie aktualizuje istniejący. Po zapisie automatycznie odświeża dane.
+- `updateCategoryName(oldName: String, newName: String)`: Funkcja do masowej edycji. Przeszukuje wszystkie posiłki zawierające daną kategorię i zmienia jej nazwę na nową we wszystkich wpisach.
+- `deleteCategory(category: String)`: Usuwa wybraną kategorię ze wszystkich posiłków, w których była przypisana (nie usuwa samych posiłków, a jedynie tekst kategorii z ich opisu).
+2. `RecipeViewModel`
+- `loadRecipes()`: Pobiera listę wszystkich przepisów wraz z powiązanymi z nimi danymi o posiłkach (RecipeWithMeal). Wyciąga również unikalne kategorie z tych przepisów.
+- `loadRecipeById(id: Int)`: Pobiera jeden konkretny przepis do edycji lub wyświetlenia szczegółów.
+- `saveRecipe(recipe: Recipe, onComplete: (Long) -> Unit)`: Zapisuje przepis do bazy (dodaje nowy lub aktualizuje). Zwraca id zapisanego elementu przez callback onComplete.
+- `deleteRecipe(id: Int, onComplete: () -> Unit)`: Usuwa przepis z bazy danych i odświeża listę.
 
 ### Efekt końcowy
 <img width="270" height="585" alt="Screenshot_20260516_131020_YummyDiary" src="https://github.com/user-attachments/assets/94754693-e182-439f-82e7-bf631134cfd9" />
