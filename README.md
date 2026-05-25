@@ -81,19 +81,23 @@ W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych przepi
 ### Warstwa Repozytorium
 1. MealRepository
 Zarządza danymi dotyczącymi dziennika posiłków i restauracji.
+
 Zarządzanie Posiłkami:
 - `getAllMeals()`: Pobiera listę wszystkich zapisanych dań.
 - `getMealById(id)`: Pobiera szczegóły konkretnego wpisu.
 - `insertMeal(meal)` / `updateMeal(meal)`: Obsługuje dodawanie nowych i edycję istniejących posiłków.
 - `deleteMealById(id)`: Usuwa wpis z dziennika.
+
 Metadane i Filtrowanie:
 - `getAllCategories()`: Pobiera listę unikalnych tagów/kategorii (np. Obiad, Deser).
 - `getAllRestaurantNames()`: Pobiera listę nazw restauracji do podpowiedzi.
 - `getMealsWithCategory(category)`: Filtruje listę dań według wybranego tagu
 2. RecipeRepository
 Odpowiada za logikę związaną z książką przepisów kulinarnych.
+
 Relacje danych:
-- `getAllRecipesWithMeals()`: Zwraca listę przepisów wraz z powiązanymi z nimi informacjami o zjedzonych posiłkach (wykorzystuje klasę pośrednią RecipeWithMeal).
+- `getAllRecipesWithMeals()`: Zwraca listę przepisów wraz z powiązanymi z nimi informacjami o zjedzonych posiłkach (wykorzystuje klasę pośrednią `RecipeWithMeal`).
+
 Operacje CRUD:
 - `getRecipeById(id)`: Pobiera instrukcje konkretnego przepisu.
 - `insertRecipe(recipe)` / `updateRecipe(recipe)`: Zapisuje nowe instrukcje kulinarne lub aktualizuje istniejące.
