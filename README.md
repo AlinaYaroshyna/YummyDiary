@@ -78,6 +78,27 @@ W tym modelu strumienie zarządzają danymi dotyczącymi zarejestrowanych przepi
 - `saveRecipe(recipe: Recipe, onComplete: (Long) -> Unit)`: Zapisuje przepis do bazy (dodaje nowy lub aktualizuje). Zwraca id zapisanego elementu przez callback onComplete.
 - `deleteRecipe(id: Int, onComplete: () -> Unit)`: Usuwa przepis z bazy danych i odświeża listę.
 
+### Warstwa Repozytorium
+1. MealRepository
+Zarządza danymi dotyczącymi dziennika posiłków i restauracji.
+Zarządzanie Posiłkami:
+- `getAllMeals()`: Pobiera listę wszystkich zapisanych dań.
+- `getMealById(id)`: Pobiera szczegóły konkretnego wpisu.
+- `insertMeal(meal)` / `updateMeal(meal)`: Obsługuje dodawanie nowych i edycję istniejących posiłków.
+- `deleteMealById(id)`: Usuwa wpis z dziennika.
+Metadane i Filtrowanie:
+- `getAllCategories()`: Pobiera listę unikalnych tagów/kategorii (np. Obiad, Deser).
+- `getAllRestaurantNames()`: Pobiera listę nazw restauracji do podpowiedzi.
+- `getMealsWithCategory(category)`: Filtruje listę dań według wybranego tagu
+2. RecipeRepository
+Odpowiada za logikę związaną z książką przepisów kulinarnych.
+Relacje danych:
+- `getAllRecipesWithMeals()`: Zwraca listę przepisów wraz z powiązanymi z nimi informacjami o zjedzonych posiłkach (wykorzystuje klasę pośrednią RecipeWithMeal).
+Operacje CRUD:
+- `getRecipeById(id)`: Pobiera instrukcje konkretnego przepisu.
+- `insertRecipe(recipe)` / `updateRecipe(recipe)`: Zapisuje nowe instrukcje kulinarne lub aktualizuje istniejące.
+- `deleteRecipeById(id)`: Usuwa przepis z bazy danych.
+
 ### Efekt końcowy
 <img width="270" height="585" alt="Screenshot_20260516_131020_YummyDiary" src="https://github.com/user-attachments/assets/94754693-e182-439f-82e7-bf631134cfd9" />
 <img width="270" height="585" alt="Screenshot_20260516_131127_YummyDiary" src="https://github.com/user-attachments/assets/21846477-52e7-4fba-83a9-85f792b258f0" />
